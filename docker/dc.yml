@@ -13,7 +13,7 @@ services:
     tty: true
 
   lab:
-    image: probe.lab
+    image: movie-query/lab
     volumes:
       - ../lab:/opt/app
     build:
