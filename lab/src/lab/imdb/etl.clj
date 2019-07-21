@@ -60,15 +60,27 @@
 
 (defn tsv-vals->rdf-vec
   "Returns rdf vec"
-  [id attrs vals]
-  (map(fn [attr val]
+  [id attrs vals specs]
+  (map(fn [val attr ]
                  (vector (wrap-brackets id)
-                         (wrap-brackets attr)
-                         (wrap-quotes val))) vals attrs))
+                         (wrap-brackets (apply-imdb-specs-attr attr specs))
+                         (apply-imdb-specs-val attr (wrap-quotes val) specs)
+                         "."
+                         )) vals attrs))
+
+(defn apply-imdb-specs-val
+  "Returns string. Apply specs to val"
+  [attr val specs]
+  (str  val (get-in specs [:appendecies attr])))
+
+(defn apply-imdb-specs-attr
+  "Returns string. Apply specs to attr"
+  [attr  specs]
+  (str (:namespace specs) attr ))
 
 (defn tsv-strings->rdf-strings
   "Converts tsv strings to rdf strings"
-  [tsv-strings]
+  [tsv-strings specs]
   (let [header (split-tab (ffirst tsv-strings))
         attrs  (rest header)]
     (map (fn [s]
@@ -76,13 +88,21 @@
                    id   (first xs)
                    vals (rest xs)]
                (->>
-                (tsv-vals->rdf-vec id attrs vals)
+                (tsv-vals->rdf-vec id attrs vals specs)
                 (map #(cstr/join #" " %))
                   ;
                 )))(rest tsv-strings))
     ;
     ))
 
+(def imdb-specs
+  {:namespace "imdb."
+   :appendecies {"averageRating" "^^<xs:float>"
+                 "numVotes"      "^^<xs:int"
+                 "name" "@en"
+                              }
+   }
+  )
 
 (comment
   
@@ -102,9 +122,6 @@
   
   (take 10 title-ratings)
   
-  ()
-  
-  (doall )
   
   
   (cstr/split "tt0000002\t6.3\t185" #"\t" )
@@ -113,17 +130,24 @@
   
   
   (->
-   (tsv-strings->rdf-strings  (take 10 title-ratings))
+   (tsv-strings->rdf-strings  (take 10 title-ratings) imdb-specs)
   ;  flatten
    pp/pprint
    )
   
-  (def title-ratings-rdfs (tsv-strings->rdf-strings title-ratings) )
+  (def title-ratings-rdfs (tsv-strings->rdf-strings title-ratings imdb-specs) )
   
   (->>
    (drop 500000 title-ratings-rdfs)
    (take 10 )
    pp/pprint
+   )
+  
+  (->>
+   (drop 500000 title-ratings-rdfs)
+   (take 10)
+   flatten
+   (write-lines filename-title-rating-rdf)
    )
   
   
