@@ -16,6 +16,7 @@ services:
     image: movie-query/lab
     volumes:
       - ../lab:/opt/app
+      - ../.data:/opt/.data
     build:
       context: ../lab
       dockerfile: ./Dockerfile

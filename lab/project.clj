@@ -31,14 +31,15 @@
                  [commons-io/commons-io "2.4"]
                  [clj-http "3.10.0"]
                  [cheshire "5.8.1"]
-                 
+                 [org.clojure/data.csv "0.1.4"]
+
                  [io.dgraph/dgraph4j "1.7.3"]
                 ;  [com.google.code.gson/gson "2.2.2"]
                 ;  [com.google.protobuf/protobuf-java "3.9.0-rc-1"]
                 ;  [io.grpc/grpc-all "1.22.1"]
                 ;  [io.grpc/grpc-protobuf "1.22.1"]
 
-                 
+
                  ;
                  ]
 
