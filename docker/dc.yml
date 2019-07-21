@@ -3,7 +3,16 @@ version: "3.2"
 
 services:
 
-   lab:
+  base:
+    image: movie-query/base
+    build:
+      context: ./base
+      dockerfile: ./Dockerfile
+    command: tail -f /dev/null
+    stdin_open: true
+    tty: true
+
+  lab:
     image: probe.lab
     volumes:
       - ../lab:/opt/app
@@ -20,6 +29,7 @@ services:
     stdin_open: true
     tty: true
     links:
+      - base
       - server
       - zero
       - ratel 
