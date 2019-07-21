@@ -31,6 +31,9 @@
 (def filename-title-rating-rdf "/opt/.data/imdb.rdf/title.ratings.rdf")
 
 
+(def filename-names "/opt/.data/imdb/name.basics.tsv")
+(def filename-names-rdf "/opt/.data/imdb.rdf/name.basics.rdf")
+
 (defn nl
   "append newline char to str"
   [s]
@@ -58,6 +61,16 @@
   [s]
   (cstr/split s #"\t"))
 
+(defn apply-imdb-specs-val
+  "Returns string. Apply specs to val"
+  [attr val specs]
+  (str  val (get-in specs [:suffix attr])))
+
+(defn apply-imdb-specs-attr
+  "Returns string. Apply specs to attr"
+  [attr  specs]
+  (str (:domain specs) (get-in specs [:subdomains attr]) attr))
+
 (defn tsv-vals->rdf-vec
   "Returns rdf vec"
   [id attrs vals specs]
@@ -68,15 +81,7 @@
                          "."
                          )) vals attrs))
 
-(defn apply-imdb-specs-val
-  "Returns string. Apply specs to val"
-  [attr val specs]
-  (str  val (get-in specs [:appendecies attr])))
 
-(defn apply-imdb-specs-attr
-  "Returns string. Apply specs to attr"
-  [attr  specs]
-  (str (:namespace specs) attr ))
 
 (defn tsv-strings->rdf-strings
   "Converts tsv strings to rdf strings"
@@ -89,66 +94,93 @@
                    vals (rest xs)]
                (->>
                 (tsv-vals->rdf-vec id attrs vals specs)
-                (map #(cstr/join #" " %))
+                (map #(cstr/join " " %))
                   ;
                 )))(rest tsv-strings))
     ;
     ))
 
 (def imdb-specs
-  {:namespace "imdb."
-   :appendecies {"averageRating" "^^<xs:float>"
-                 "numVotes"      "^^<xs:int"
-                 "name" "@en"
-                              }
+  {:domain "imdb."
+   :suffix {"averageRating" "^^<xs:float>"
+            "numVotes"      "^^<xs:int>"
+            "name"          "@en"}
+   :subdomains {"averageRating" "title."
+                "numVotes"      "title."
+                }
    }
   )
 
 (comment
+
+  (def title-ratings (read-csv-file  filename-title-ratings))
   
   (def title-ratings (read-csv-file  filename-title-ratings))
   
+
   (.mkdirs (java.io.File. "/opt/.data/imdb.rdf"))
-  
+
   (.delete (java.io.File. filename-title-rating-rdf))
-  
+
   (.createNewFile (java.io.File. filename-title-rating-rdf))
-  
-  (spit filename-title-rating-rdf (nl "<123> <name> \"asd\" .") :append true )
-  
+
+  (spit filename-title-rating-rdf (nl "<123> <name> \"asd\" .") :append true)
+
   (count title-ratings)
-  
+
   (type title-ratings)
-  
+
   (take 10 title-ratings)
-  
-  
-  
-  (cstr/split "tt0000002\t6.3\t185" #"\t" )
-  
-  (cstr/join  "3" ["asd" "d"] )
-  
-  
+
+
+
+  (cstr/split "tt0000002\t6.3\t185" #"\t")
+
+  (cstr/join  "3" ["asd" "d"])
+
+
   (->
    (tsv-strings->rdf-strings  (take 10 title-ratings) imdb-specs)
-  ;  flatten
-   pp/pprint
-   )
-  
-  (def title-ratings-rdfs (tsv-strings->rdf-strings title-ratings imdb-specs) )
-  
-  (->>
-   (drop 500000 title-ratings-rdfs)
-   (take 10 )
-   pp/pprint
-   )
-  
+   flatten
+   pp/pprint)
+
+  (def title-ratings-rdfs (tsv-strings->rdf-strings title-ratings imdb-specs))
+
+  ; (count title-ratings-rdfs)
+
+
   (->>
    (drop 500000 title-ratings-rdfs)
    (take 10)
+   pp/pprint)
+
+  (->>
+   (drop 500000 title-ratings-rdfs)
+   (take 100000)
    flatten
-   (write-lines filename-title-rating-rdf)
-   )
+   (write-lines filename-title-rating-rdf))
+
+  (let [total  (count title-ratings)
+        step   100000
+        ran    (range 0 total step)
+        points (concat ran [total])]
+    (prn points)
+    (doseq [p points]
+           (->>
+            (take step (drop p title-ratings-rdfs))
+            flatten
+            (write-lines filename-title-rating-rdf))))
+
+
+
+
+  ;
+  )
+
+
+(comment
+  
+  
   
   
   ;

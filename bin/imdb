@@ -27,4 +27,12 @@ unzip(){
   mv $PREFIX/*.tsv $TARGET
 }
 
+zip(){
+  PREFIX=./.data/imdb.rdf
+  TARGET=./.data/imdb.rdf.gz
+  gzip -k -r  $PREFIX
+  mkdir -p $TARGET
+  mv $PREFIX/*.gz $TARGET
+}
+
 "$@"

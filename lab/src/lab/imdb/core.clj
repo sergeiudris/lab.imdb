@@ -1,5 +1,6 @@
 (ns lab.imdb.core
   (:require [clojure.repl :refer :all]
+            [clojure.pprint :as pp]
             [lab.dgraph.core :refer [q create-client set-schema]])
   ;
   )
@@ -31,6 +32,17 @@
        :vars    {}})
 
    (pp/pprint))
+  
+   (->
+    (q {:qstring "{
+  all(func: has(imdb.title.numVotes)) {
+    count(uid)
+        }
+  }"
+        :client  c
+        :vars    {}})
+
+    (pp/pprint))
 
   
   
@@ -53,7 +65,7 @@
               <imdb.title.startYear>: int @index(int) .
               <imdb.title.endYear>: int @index(int) .
               <imdb.title.runtimeMinutes>: int @index(int) .
-              <imdb.title.genres>: [string] @index (term,fulltext) @count .
+              <imdb.title.genres>: [string] @index (term,fulltext) .
               
               <imdb.title.directors>: uid .
               <imdb.title.writers>: uid .
@@ -69,8 +81,12 @@
               <imdb.principals.job>: string @index(exact) .
               <imdb.principals.characters>: string @index(exact,fulltext) .
                
-              <imdb.name>: string @index(exact,fulltext) .
-              
+              <imdb.name.name>: string @index(exact,fulltext) .
+              <imdb.name.primaryName>: string .
+              <imdb.name.birthYear>: int  @index(int) .
+              <imdb.name.deathYear>: int  @index(int) .
+              <imdb.name.primaryProfession>: [string]  @index (term,fulltext) .
+              <imdb.name.knownForTitles>: uid .
                
               "
                :client        c})

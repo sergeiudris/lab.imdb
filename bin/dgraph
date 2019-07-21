@@ -36,5 +36,9 @@ alter_schema(){
     '  | python -m json.tool | less
 }
 
+load_imdb(){
+    dc exec server bash -c "cd /opt/app; dgraph live -r .data/imdb.rdf.gz/title.ratings.rdf.gz --zero zero:5080 -c 1"
+}
+
 
 "$@"

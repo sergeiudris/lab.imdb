@@ -21,7 +21,7 @@ services:
       context: ../lab
       dockerfile: ./Dockerfile
     ports:
-      - 7010:7878
+      - 7000:7878
       # - 7878:7878
       # - 11488:7888
       # - 12083:8080
