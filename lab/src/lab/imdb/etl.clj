@@ -100,6 +100,17 @@
     ;
     ))
 
+
+
+(def mother-of-all-files
+  (with-open [rdr (clojure.io/reader "/home/user/.../big_file.txt")]
+    (into []
+          (comp (partition-by #(= % "")) ;; splits on empty lines (double \n)
+                (remove #(= % "")) ;; remove empty lines
+                (map #(clojure.string/join "\n" %)) ;; group lines together
+                (map clojure.string/trim))
+          (line-seq rdr))))
+
 (def imdb-specs
   {:domain "imdb."
    :suffix {"averageRating" "^^<xs:float>"
@@ -111,16 +122,53 @@
    }
   )
 
+(defn in-steps
+  "Process lazy seq in steps"
+  [fnc & {:keys [data step total]
+          :or   {step 100000}}]
+  (let [total*  (or total (count data))
+        ran    (range 0 total* step)
+        points (concat ran [total*])]
+    (prn points)
+    (doseq [p points]
+      (fnc p ))))
+
+(defn names->rdf
+  [filename-in filename-out]
+  (with-open [reader (io/reader filename-in)]
+    (let [data (csv/read-csv reader)
+          step 100000]
+      (in-steps
+       (fn [p]
+         (as-> nil e
+           (take step (drop p data))
+           (tsv-strings->rdf-strings e imdb-specs)
+           (flatten e)
+           (write-lines filename-out e)
+                    ;
+           ))
+       :step step
+       :data data
+       :total 250000
+       ;
+       ))))
+
+
+
+
 (comment
 
   (def title-ratings (read-csv-file  filename-title-ratings))
   
-  (def title-ratings (read-csv-file  filename-title-ratings))
+  (names->rdf  filename-names filename-names-rdf)
   
 
   (.mkdirs (java.io.File. "/opt/.data/imdb.rdf"))
 
   (.delete (java.io.File. filename-title-rating-rdf))
+  
+  (.delete (java.io.File. filename-names-rdf))
+  
 
   (.createNewFile (java.io.File. filename-title-rating-rdf))
 
