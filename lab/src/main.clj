@@ -3,7 +3,8 @@
             [dev.core]
             [lab.dgraph.core]
             [lab.dgraph.sample]
-   
+            [lab.imdb.core]
+            [lab.imdb.etl]
 
    ;
             )
