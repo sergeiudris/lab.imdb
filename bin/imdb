@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# https://stackoverflow.com/questions/3430810/multiple-simultaneous-downloads-using-wget
+
+
+load(){
+  PREFIX=./.data/imdb.gz
+  HOST=https://datasets.imdbws.com
+
+  wget -P $PREFIX $HOST/name.basics.tsv.gz &
+  wget -P $PREFIX $HOST/title.akas.tsv.gz &
+  wget -P $PREFIX $HOST/title.basics.tsv.gz &
+  wget -P $PREFIX $HOST/title.crew.tsv.gz &
+  wget -P $PREFIX $HOST/title.episode.tsv.gz &
+  wget -P $PREFIX $HOST/title.principals.tsv.gz &
+  wget -P $PREFIX $HOST/title.ratings.tsv.gz &
+  # wget -r -np -N -P ./.data $HOST
+}
+
+unzip(){
+  PREFIX=./.data/imdb.gz
+  TARGET=./.data/imdb
+  # find $PREFIX -type f -name "*.gz" -print0 | xargs -0 -I{} tar xf {} -C $PREFIX
+  # find $PREFIX -type f -name "*.gz" -exec tar xf {} -C $PREFIX/a \;
+  gunzip -r -k $PREFIX
+  mkdir -p $TARGET
+  mv $PREFIX/*.tsv $TARGET
+}
+
+"$@"
