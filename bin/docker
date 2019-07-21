@@ -1,0 +1,21 @@
+#!/bin/bash
+
+
+stop_all(){
+    docker stop $(docker ps -aq)
+}
+
+rm_all(){
+    docker rm $(docker ps -aq)
+}
+
+stop_rm_all(){
+    stop_all
+    rm_all
+}
+
+rmi_all(){
+    docker rmi $(docker images -q)
+}
+
+"$@"

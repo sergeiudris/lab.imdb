@@ -1,0 +1,66 @@
+version: "3.2"
+
+services:
+  zero:
+    image: dgraph/dgraph:v1.0.15
+    volumes:
+      - type: volume
+        source: dgraph-probe
+        target: /dgraph
+        volume:
+          nocopy: true
+    ports:
+      - 5080:5080
+      - 6080:6080
+    restart: on-failure
+    command: dgraph zero --my=zero:5080
+
+  server:
+    image: dgraph/dgraph:v1.0.15
+    # image: dgraph.server
+    # build:
+    #   context: ./server
+    #   dockerfile: ./Dockerfile
+    volumes:
+      - type: volume
+        source: dgraph-probe
+        target: /dgraph
+        volume:
+          nocopy: true
+      - "../:/opt/app"
+    ports:
+      - 8080:8080
+      - 9080:9080
+    restart: on-failure
+    stdin_open: true
+    tty: true
+    command: dgraph alpha --my=server:7080 --lru_mb=2048 --zero=zero:5080
+
+  ratel:
+    image: dgraph/dgraph:v1.0.15
+    volumes:
+      - type: volume
+        source: dgraph-probe
+        target: /dgraph
+        volume:
+          nocopy: true
+    ports:
+      - 8000:8000
+    command: dgraph-ratel
+
+  # golang:
+  #   image: golang
+  #   volumes:
+  #     - "./:/opt/app"
+  #   build:
+  #     context: ./golang
+  #     dockerfile: ./Dockerfile
+  #   restart: on-failure
+  #   stdin_open: true
+  #   tty: true
+  #   command: tail -f /dev/null
+  #   links:
+  #     - server
+
+volumes:
+  dgraph-probe:

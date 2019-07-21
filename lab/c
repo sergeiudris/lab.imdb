@@ -1,0 +1,50 @@
+#!/bin/bash
+
+repl(){
+  # lein repl :headless :host 0.0.0.0 :port 35543
+  lein repl :start :host 0.0.0.0 :port 35543
+}
+
+repl_headless(){
+  lein repl :headless :host 0.0.0.0 :port 4001
+}
+
+test(){
+  lein test
+}
+
+test_refresh(){
+  lein test-refresh
+}
+
+dev(){
+  lein clean
+  lein dev
+
+  # lein clean
+  # repl_headless
+}
+
+uberjars(){
+  lein with-profile wordcount:sandbox:cascalog uberjar
+  # lein with-profile wordcount uberjar
+}
+supujar(){
+  lein with-profile supweb1 uberjar
+  # lein with-profile wordcount uberjar
+}
+jars(){
+  lein with-profile wordcount:sandbox:cascalog jar
+  # lein with-profile wordcount uberjar
+}
+
+hadjar(){
+  hadoop jar target/$1-standalone.jar  "${@:2}"
+}
+
+jobwc(){
+  hadjar wordcount out11
+}
+
+
+"$@"
