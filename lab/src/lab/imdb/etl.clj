@@ -316,9 +316,9 @@
           header      (split-tab header-line)
           attrs       (rest header)
           ]
-      (prn header-line)
-      (prn header)
-      (prn attrs)
+      ; (prn header-line)
+      ; (prn header)
+      ; (prn attrs)
       (doseq [
               line (rest data)
               ; line (take 50 (rest data))
@@ -365,6 +365,8 @@
   (names->rdf-2  filename-names filename-names-rdf)
   
   (names->rdf-2  filename-titles filename-titles-rdf)
+  
+  (names->rdf-3  filename-names filename-names-rdf)
   
   (names->rdf-3  filename-titles filename-titles-rdf)
   

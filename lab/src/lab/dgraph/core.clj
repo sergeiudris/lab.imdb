@@ -238,7 +238,13 @@
            :client c
            })
   
+  (def c (create-client {:with-auth-header? false
+                         :hostname          "server"
+                         :port              9080}))
+  
   (drop-all c)
+  
+  (count-total-nodes c)
   
   
   

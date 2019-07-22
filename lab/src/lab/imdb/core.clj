@@ -48,6 +48,51 @@
   
   
   (set-schema {:schema-string "
+              <imdb.title.averageRating>: float .
+              <imdb.title.numVotes>: int .
+              
+              <imdb.akas.title>: uid .
+              <imdb.akas.ordering>: int .
+              <imdb.akas.titleString>: string @index(exact,fulltext) @count .
+              <imdb.akas.region>: string .
+              <imdb.akas.language>: string .
+              <imdb.akas.attributes>: [string] .
+              <imdb.akas.isOriginalTitle>: bool .
+               
+              <imdb.title.titleType>: string .
+              <imdb.title.primaryTitle>: string .
+              <imdb.title.originalTitle>: string .
+              <imdb.title.isAdult>: bool .
+              <imdb.title.startYear>: int .
+              <imdb.title.endYear>: int .
+              <imdb.title.runtimeMinutes>: int .
+              <imdb.title.genres>: [string] .
+              
+              <imdb.title.directors>: uid .
+              <imdb.title.writers>: uid .
+               
+              <imdb.episode.series>: uid .
+              <imdb.episode.seasonNumber>: int .
+              <imdb.episode.episodeNumber>: int .
+               
+              <imdb.principals.title>: uid . 
+              <imdb.principals.name>: uid .
+              <imdb.principals.ordering>: int .
+              <imdb.principals.category>: string .
+              <imdb.principals.job>: string .
+              <imdb.principals.characters>: string .
+               
+              <imdb.name.name>: string @index(exact,fulltext) .
+              <imdb.name.primaryName>: string .
+              <imdb.name.birthYear>: int .
+              <imdb.name.deathYear>: int .
+              <imdb.name.primaryProfession>: [string] .
+              <imdb.name.knownForTitles>: uid .
+               
+              "
+               :client        c})
+  
+  (set-schema {:schema-string "
               <imdb.title.averageRating>: float @index(float) .
               <imdb.title.numVotes>: int @index(int) .
               
