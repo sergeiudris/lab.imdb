@@ -1,8 +1,9 @@
 (ns lab.imdb.etl
   (:require [clojure.repl :refer :all]
             [clojure.pprint :as pp]
-            [lab.dgraph.core :refer [q create-client set-schema]]
-            [clojure.data.csv :as csv]
+            [lab.dgraph.core :refer [q create-client mutate mutate-del set-schema]]
+            ; [clojure.data.csv :as csv]
+            [lab.csv :as csv]
             [clojure.java.io :as io]
             [clojure.string :as cstr]
 
@@ -65,27 +66,57 @@
   [s]
   (cstr/split s #"\t"))
 
+(defn replace-double-quotes
+  [s & {:keys [ch] :or {ch "'" }}]
+  (clojure.string/replace s #"\"" ch)
+  )
+
 (defn apply-imdb-specs-val
   "Returns string. Apply specs to val"
   [attr val specs]
-  (str  val (get-in specs [:suffix attr])))
+  (let [xform (get-in specs [:val attr] ) ]
+    (as-> val e
+      
+      (if xform (xform e attr specs) e )
+      (str  e (get-in specs [:suffix attr])))
+    )
+  )
 
 (defn apply-imdb-specs-attr
   "Returns string. Apply specs to attr"
   [attr  specs]
   (str (:domain specs) (get-in specs [:subdomains attr]) attr))
 
+(defn tsv-vec->rdf-line
+  [id val attr specs]
+  (as-> val e
+    (replace-double-quotes e)
+   (vector (wrap-brackets id)
+           (wrap-brackets (apply-imdb-specs-attr attr specs))
+           (apply-imdb-specs-val attr
+                                 (if (get-in specs [:xid attr]) (wrap-brackets e) (wrap-quotes e))
+                                 specs)
+           ".")
+   (cstr/join " " e))
+  
+  )
+
 (defn tsv-vals->rdf-vec
   "Returns rdf vec"
   [id attrs vals specs]
   (->>
    (map (fn [val attr]
-          (if
-           (= val "\\N") nil ;(do (prn val) nil)
-           (vector (wrap-brackets id)
-                   (wrap-brackets (apply-imdb-specs-attr attr specs))
-                   (apply-imdb-specs-val attr (wrap-quotes val) specs)
-                   "."))) vals attrs)
+          ; (prn (if (get-in specs [:xid attr]) (wrap-brackets val) "-"))
+          (let [val->arr (get-in specs [:array attr ] )]
+            (cond
+              (= val "\\N") nil ;(do (prn val) nil)
+              val->arr (->>
+                        (map #(tsv-vec->rdf-line id % attr specs) (val->arr val attr specs))
+                        ; flatten
+                        )
+              :else (tsv-vec->rdf-line id val attr specs))
+            )
+          ) vals attrs)
    (keep #(if (nil? %) nil % ))
    )
   )
@@ -98,7 +129,9 @@
         vals (rest xs)]
     (->>
      (tsv-vals->rdf-vec id attrs vals specs)
-     (map #(cstr/join " " %))
+    ;  (prn)
+     flatten
+    ;  (map #(cstr/join " " %))
                   ;
      )))
 
@@ -156,17 +189,43 @@
   {:domain "imdb."
    :suffix {"averageRating" "^^<xs:float>"
             "numVotes"      "^^<xs:int>"
-            "birthYear"      "^^<xs:int>"
-            "deathYear"      "^^<xs:int>"
-            "name"          "@en"}
-   :subdomains {"averageRating" "title."
-                "numVotes"      "title."
-                "primaryName" "name."
-                "birthYear" "name."
-                "deathYear" "name."
+            "birthYear"     "^^<xs:int>"
+            "deathYear"     "^^<xs:int>"
+            "name"          "@en"
+            "isAdult"       "^^<xs:boolean>"
+            "startYear"     "^^<xs:int>"
+            "endYear"     "^^<xs:int>"
+            "runtimeMinutes"  "^^<xs:int>"
+            }
+   :subdomains {"averageRating"     "title."
+                "numVotes"          "title."
+                "primaryName"       "name."
+                "birthYear"         "name."
+                "deathYear"         "name."
                 "primaryProfession" "name."
-                "knownForTitles" "name."
-                }
+                "knownForTitles"    "name."
+
+                "titleType"         "title."
+                "primaryTitle"      "title."
+                "originalTitle"     "title."
+                "isAdult"           "title."
+                "startYear"         "title."
+                "endYear"           "title."
+                "runtimeMinutes"    "title."
+                "genres"            "title."}
+   :xid {"knownForTitles" true
+         
+         }
+   :val {"isAdult" (fn [val attr specs]
+                    ;  (prn val)
+                     (if (= "\"0\"" val) "\"false\"" "\"true\""))
+         }
+   :array {
+           "genres" (fn [val attr specs]
+                      ; (prn val)
+                      (cstr/split  val #"\,")
+                      )
+           }
    }
   )
 
@@ -226,23 +285,75 @@
   [filename-in filename-out]
   (with-open [reader (io/reader filename-in)
               writer (clojure.java.io/writer filename-out :append true)]
-    (let [data        (csv/read-csv reader)
+    (let [data        (csv/read-csv reader :separator \tab :qoute \])
           ; header-line (read-nth-line filename-in 1)
           header-line (ffirst data)
           header      (split-tab header-line)
           attrs       (rest header)]
       ; (prn (count data))
-      (doseq [line (take 100 (rest data))]
+      (doseq [
+              line (rest data)
+              ; line (take 50 (rest data))
+              ]
         ; (prn (tsv-line->rdf-line (first line) attrs imdb-specs))
         (as-> nil e
           (tsv-line->rdf-line (first line) attrs imdb-specs)
           (cstr/join \newline e)
-          (str e "\n")
-          ; (prn e)
+          ; (str e "\n")
+          (str e \newline)
+          ; (do (prn e) e)s
           (.write writer e)
           ;
           )))))
 
+(defn names->rdf-3
+  [filename-in filename-out]
+  (with-open [reader (io/reader filename-in)
+              writer (clojure.java.io/writer filename-out :append true)]
+    (let [data        (line-seq reader)
+          ; header-line (read-nth-line filename-in 1)
+          header-line (first data)
+          header      (split-tab header-line)
+          attrs       (rest header)
+          ]
+      (prn header-line)
+      (prn header)
+      (prn attrs)
+      (doseq [
+              line (rest data)
+              ; line (take 50 (rest data))
+              ]
+        ; (prn (tsv-line->rdf-line (first line) attrs imdb-specs))
+        (as-> nil e
+          (tsv-line->rdf-line line attrs imdb-specs)
+          (cstr/join \newline e)
+          ; (str e "\n")
+          (str e \newline)
+          ; (do (prn e) e)s
+          (.write writer e)
+          ;
+          ))
+      )))
+
+(comment
+
+  (split-tab (read-nth-line filename-titles 1))
+
+  (read-nth-line filename-titles 10000)
+
+  (read-nth-line filename-titles 525045)
+  
+  (read-nth-line filename-titles 525044)
+
+;tt0544863	tvEpisode	"Consuela" (Or 'The New Mrs Saunders')	"Consuela" (Or 'The New Mrs Saunders')	0	1986	\N	36	Comedy
+
+  (count-lines filename-titles)
+
+  (count-lines filename-titles-rdf)
+  
+
+  ;
+  )
 
 
 (comment
@@ -252,6 +363,10 @@
   (names->rdf  filename-names filename-names-rdf)
   
   (names->rdf-2  filename-names filename-names-rdf)
+  
+  (names->rdf-2  filename-titles filename-titles-rdf)
+  
+  (names->rdf-3  filename-titles filename-titles-rdf)
   
   
   (titles->rdf filename-titles filename-titles-rdf)
@@ -320,10 +435,87 @@
   ;
   )
 
+(defn find-uids
+  [{:keys [query client vars]}]
+  (as-> nil e
+   (q {:qstring "{
+    all(func: has(imdb.name.primaryName)) {
+    uid
+    }
+  }"
+       :client  client
+       :vars    (or vars {})})
+   (get e "all")
+   (map #(get % "uid") e)
+   ))
+
+(defn delete-uids
+  [{:keys [query client vars] :as opts}]
+  (as-> nil e
+    (find-uids opts )
+    (map #(str (wrap-brackets %) " *" " *" " .") e)
+    (cstr/join \newline e)
+    ; (str "{ delete
+    ;      { 
+    ;      " e "
+    ;      }
+    ;      }")
+    ; (spit "/opt/.data/imdb/delete1" e)
+    (mutate-del {:s e
+                 :client client
+                 })
+    )
+  )
 
 (comment
+
+  (def c (create-client {:with-auth-header? false
+                         :hostname          "server"
+                         :port              9080}))
+
+  (mutate {:data   {"name" "John"}
+           :client c})
+
+  (->
+   (q {:qstring "{
+    all(func: has(imdb.name.primaryName)) {
+    uid
+    }
+  }"
+       :client  c
+       :vars    {}})
+
+   (pp/pprint))
+
+  (->>
+   (find-uids {:client c
+               :query "{
+    all(func: has(imdb.name.primaryName)) {
+    uid
+    }
+  }"
+               })
+   (map #(wrap-brackets %))
+   )
   
-  
+  (delete-uids {:client c
+                :query  "{
+    all(func: has(imdb.name.primaryName)) {
+    uid
+    }
+  }"})
+
+
+  (mutate-str {:s      "
+               {
+                 delete {
+                   * <imdb.name.primaryName> * .
+                 }
+               }
+               "
+               :client c})
+
+
   (def mother-of-all-files
     (with-open [rdr (clojure.io/reader "/home/user/.../big_file.txt")]
       (into []
@@ -332,6 +524,6 @@
                   (map #(clojure.string/join "\n" %)) ;; group lines together
                   (map clojure.string/trim))
             (line-seq rdr))))
-  
+
   ;
   )

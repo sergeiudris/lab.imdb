@@ -139,6 +139,8 @@
 
   (prn-members res)
   
+  (prn-members (DgraphProto$Mutation/newBuilder))
+  
   (sort ["a" "c" "b"])
   
   (->
@@ -183,12 +185,44 @@
     ;
     ))
 
+(defn mutate-del
+  "Transact dgraph mutation"
+  [{:keys [s client]}]
+  (let [txn (.newTransaction client)]
+    (try
+      (let [mu  (->
+                 (DgraphProto$Mutation/newBuilder)
+                 (.setDelNquads (ByteString/copyFromUtf8 s))
+                 (.build))]
+        (.mutate txn mu)
+        (.commit txn))
+      (catch Exception e (str "caught exception: " (.getMessage e)))
+      (finally (.discard txn)))
+    ;
+    ))
+
+; https://github.com/dgraph-io/dgraph4j#alter-the-database
+; https://github.com/dgraph-io/dgraph/pull/1547
+(defn drop-all
+  "Drop all"
+  [client]
+  (let [op (->
+            (DgraphProto$Operation/newBuilder)
+            (.setDropAll true)
+            (.build))]
+    (.alter client op)))
 
 (comment
+  
+  (prn-members (DgraphProto$Mutation/newBuilder))
   
   (mutate {:data {"name" "John"}
            :client c
            })
+  
+  (drop-all c)
+  
+  
   
   ;;;
   )
