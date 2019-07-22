@@ -87,6 +87,20 @@
   ;  (pp/print-table [:name :flags :parameter-types])
    ))
 
+(defn count-total-nodes
+  [c]
+   (->
+    (q {:qstring "
+     {
+  total (func: has (_predicate_) ) {
+    count(uid)
+  }
+} 
+      "
+        :client  c
+        :vars    {}})
+    (pp/pprint))
+  )
 
 
 (comment
@@ -123,6 +137,10 @@
             (q-res {:client  c
                     :qstring qstring
                     :vars    {"$a" "Alice"}})))
+  
+  (count-total-nodes c)
+ 
+  
   
   (->>
    (reflect res)
