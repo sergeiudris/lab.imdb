@@ -36,8 +36,12 @@
 (def filename-names-rdf "/opt/.data/imdb.rdf/name.basics.rdf")
 
 
+
 (def filename-titles "/opt/.data/imdb/title.basics.tsv")
 (def filename-titles-rdf "/opt/.data/imdb.rdf/title.basics.rdf")
+
+(def filename-all-rdf "/opt/.data/imdb.rdf/all.rdf")
+
 
 (defn nl
   "append newline char to str"
@@ -351,6 +355,16 @@
 
   (count-lines filename-titles-rdf)
   
+  (count-lines filename-names-rdf)
+  
+  (count-lines filename-names)
+  
+  (read-nth-line filename-names 1)
+  
+  
+  (count-lines filename-all-rdf)
+  
+  
 
   ;
   )
@@ -366,9 +380,9 @@
   
   (names->rdf-2  filename-titles filename-titles-rdf)
   
-  (names->rdf-3  filename-names filename-names-rdf)
+  (names->rdf-3  filename-names filename-all-rdf)
   
-  (names->rdf-3  filename-titles filename-titles-rdf)
+  (names->rdf-3  filename-titles filename-all-rdf)
   
   
   (titles->rdf filename-titles filename-titles-rdf)

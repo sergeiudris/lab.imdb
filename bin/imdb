@@ -35,4 +35,18 @@ zip(){
   mv $PREFIX/*.gz $TARGET
 }
 
+zip_all(){
+  DIR=$(pwd)
+  PREFIX=./.data/imdb.rdf
+  TARGET=./.data/imdb.rdf.gz
+  OUT=all.tar.gz
+  mkdir -p $TARGET
+  # gzip -k $PREFIX/*.rdf 
+  cd $PREFIX && \
+      tar -czvf $OUT *.rdf
+  cd $DIR
+  ls -a
+  mv $PREFIX/$OUT $TARGET
+}
+
 "$@"
