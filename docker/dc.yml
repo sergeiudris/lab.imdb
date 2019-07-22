@@ -34,3 +34,12 @@ services:
       - server
       - zero
       - ratel 
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 4096M
+        # reservations:
+        #   cpus: '0.25'
+        #   memory: 20M
+

@@ -34,6 +34,10 @@
 (def filename-names "/opt/.data/imdb/name.basics.tsv")
 (def filename-names-rdf "/opt/.data/imdb.rdf/name.basics.rdf")
 
+
+(def filename-titles "/opt/.data/imdb/title.basics.tsv")
+(def filename-titles-rdf "/opt/.data/imdb.rdf/title.basics.rdf")
+
 (defn nl
   "append newline char to str"
   [s]
@@ -74,14 +78,29 @@
 (defn tsv-vals->rdf-vec
   "Returns rdf vec"
   [id attrs vals specs]
-  (map(fn [val attr ]
-                 (vector (wrap-brackets id)
-                         (wrap-brackets (apply-imdb-specs-attr attr specs))
-                         (apply-imdb-specs-val attr (wrap-quotes val) specs)
-                         "."
-                         )) vals attrs))
+  (->>
+   (map (fn [val attr]
+          (if
+           (= val "\\N") nil ;(do (prn val) nil)
+           (vector (wrap-brackets id)
+                   (wrap-brackets (apply-imdb-specs-attr attr specs))
+                   (apply-imdb-specs-val attr (wrap-quotes val) specs)
+                   "."))) vals attrs)
+   (keep #(if (nil? %) nil % ))
+   )
+  )
 
 
+(defn tsv-line->rdf-line
+  [line attrs specs]
+  (let [xs   (split-tab line)
+        id   (first xs)
+        vals (rest xs)]
+    (->>
+     (tsv-vals->rdf-vec id attrs vals specs)
+     (map #(cstr/join " " %))
+                  ;
+     )))
 
 (defn tsv-strings->rdf-strings
   "Converts tsv strings to rdf strings"
@@ -89,35 +108,64 @@
   (let [header (split-tab (ffirst tsv-strings))
         attrs  (rest header)]
     (map (fn [s]
-             (let [xs   (split-tab (first s))
-                   id   (first xs)
-                   vals (rest xs)]
-               (->>
-                (tsv-vals->rdf-vec id attrs vals specs)
-                (map #(cstr/join " " %))
-                  ;
-                )))(rest tsv-strings))
+           (tsv-line->rdf-line (first s) attrs specs)
+           ;
+           ) (rest tsv-strings))
     ;
     ))
 
+(defn read-nth-line
+  "Read line-number from the given text file. The first line has the number 1."
+  [file line-number]
+  (with-open [rdr (clojure.java.io/reader file)]
+    (nth (line-seq rdr) (dec line-number))))
+
+(defn count-lines
+  [file]
+  (with-open [rdr (clojure.java.io/reader file)]
+    (count (line-seq rdr) )))
+
+(comment
+  
+  (read-nth-line filename-names 1)
+  
+  
+  (read-nth-line filename-names-rdf 500000)
+  
+  (read-nth-line filename-names-rdf 4)
+  
+  
+  (count-lines filename-names)
+  (* 9459601 5)
+  (* 9459601 4)
+  
+  (count-lines filename-names-rdf)
+  
+  (read-nth-line filename-names-rdf 5000000)
+  
+  
+  ;
+  )
 
 
-(def mother-of-all-files
-  (with-open [rdr (clojure.io/reader "/home/user/.../big_file.txt")]
-    (into []
-          (comp (partition-by #(= % "")) ;; splits on empty lines (double \n)
-                (remove #(= % "")) ;; remove empty lines
-                (map #(clojure.string/join "\n" %)) ;; group lines together
-                (map clojure.string/trim))
-          (line-seq rdr))))
+
+
+
 
 (def imdb-specs
   {:domain "imdb."
    :suffix {"averageRating" "^^<xs:float>"
             "numVotes"      "^^<xs:int>"
+            "birthYear"      "^^<xs:int>"
+            "deathYear"      "^^<xs:int>"
             "name"          "@en"}
    :subdomains {"averageRating" "title."
                 "numVotes"      "title."
+                "primaryName" "name."
+                "birthYear" "name."
+                "deathYear" "name."
+                "primaryProfession" "name."
+                "knownForTitles" "name."
                 }
    }
   )
@@ -149,25 +197,72 @@
            ))
        :step step
        :data data
+      ;  :total 250000
+       ;
+       ))))
+
+(defn titles->rdf
+  [filename-in filename-out]
+  (with-open [reader (io/reader filename-in)]
+    (let [data (csv/read-csv reader :separator \tab :quote \space )
+          step 100000]
+      (in-steps
+       (fn [p]
+         (as-> nil e
+           (take step (drop p data))
+           (tsv-strings->rdf-strings e imdb-specs)
+           (flatten e)
+           (write-lines filename-out e)
+                    ;
+           ))
+       :step step
+       :data data
        :total 250000
        ;
        ))))
 
+
+(defn names->rdf-2
+  [filename-in filename-out]
+  (with-open [reader (io/reader filename-in)
+              writer (clojure.java.io/writer filename-out :append true)]
+    (let [data        (csv/read-csv reader)
+          ; header-line (read-nth-line filename-in 1)
+          header-line (ffirst data)
+          header      (split-tab header-line)
+          attrs       (rest header)]
+      ; (prn (count data))
+      (doseq [line (take 100 (rest data))]
+        ; (prn (tsv-line->rdf-line (first line) attrs imdb-specs))
+        (as-> nil e
+          (tsv-line->rdf-line (first line) attrs imdb-specs)
+          (cstr/join \newline e)
+          (str e "\n")
+          ; (prn e)
+          (.write writer e)
+          ;
+          )))))
 
 
 
 (comment
 
   (def title-ratings (read-csv-file  filename-title-ratings))
-  
+
   (names->rdf  filename-names filename-names-rdf)
   
+  (names->rdf-2  filename-names filename-names-rdf)
+  
+  
+  (titles->rdf filename-titles filename-titles-rdf)
 
   (.mkdirs (java.io.File. "/opt/.data/imdb.rdf"))
 
   (.delete (java.io.File. filename-title-rating-rdf))
-  
+
   (.delete (java.io.File. filename-names-rdf))
+
+  (.delete (java.io.File. filename-titles-rdf))
   
 
   (.createNewFile (java.io.File. filename-title-rating-rdf))
@@ -214,10 +309,10 @@
         points (concat ran [total])]
     (prn points)
     (doseq [p points]
-           (->>
-            (take step (drop p title-ratings-rdfs))
-            flatten
-            (write-lines filename-title-rating-rdf))))
+      (->>
+       (take step (drop p title-ratings-rdfs))
+       flatten
+       (write-lines filename-title-rating-rdf))))
 
 
 
@@ -229,7 +324,14 @@
 (comment
   
   
-  
+  (def mother-of-all-files
+    (with-open [rdr (clojure.io/reader "/home/user/.../big_file.txt")]
+      (into []
+            (comp (partition-by #(= % "")) ;; splits on empty lines (double \n)
+                  (remove #(= % "")) ;; remove empty lines
+                  (map #(clojure.string/join "\n" %)) ;; group lines together
+                  (map clojure.string/trim))
+            (line-seq rdr))))
   
   ;
   )

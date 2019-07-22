@@ -37,7 +37,13 @@ alter_schema(){
 }
 
 load_imdb(){
-    dc exec server bash -c "cd /opt/app; dgraph live -r .data/imdb.rdf.gz/title.ratings.rdf.gz --zero zero:5080 -c 1"
+    # dc exec server bash -c "cd /opt/app; dgraph live -r .data/imdb.rdf.gz/title.ratings.rdf.gz --zero zero:5080 -c 1"
+    # dc exec server bash -c "cd /opt/app; dgraph live -r .data/imdb.rdf.gz/title.ratings.rdf.gz \
+    # -r .data/imdb.rdf.gz/name.basics.rdf.gz \
+    #  --zero zero:5080 -c 1"
+
+    dc exec server bash -c "cd /opt/app; dgraph live -r .data/imdb.rdf.gz/name.basics.rdf.gz --zero zero:5080 -c 1"
+
 }
 
 
