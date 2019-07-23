@@ -224,12 +224,12 @@
                     ;  (prn val)
                      (if (= "\"0\"" val) "\"false\"" "\"true\""))
          }
-   :array {
-           "genres" (fn [val attr specs]
+   :array {"genres"         (fn [val attr specs]
                       ; (prn val)
-                      (cstr/split  val #"\,")
-                      )
-           }
+                              (cstr/split  val #"\,"))
+           "knownForTitles" (fn [val attr specs]
+                      ; (prn val)
+                              (cstr/split  val #"\,"))}
    }
   )
 
@@ -324,8 +324,8 @@
       ; (prn header)
       ; (prn attrs)
       (doseq [
-              line (rest data)
-              ; line (take 50 (rest data))
+              ; line (rest data)
+              line (take 100000 (rest data))
               ]
         ; (prn (tsv-line->rdf-line (first line) attrs imdb-specs))
         (as-> nil e
@@ -338,6 +338,31 @@
           ;
           ))
       )))
+
+(comment
+
+  (def orig-files [filename-names
+                   filename-titles
+                   filename-title-ratings])
+  
+  (def rdf-files [filename-title-rating-rdf
+                  filename-names-rdf
+                  filename-titles-rdf])
+
+  (doseq [filename rdf-files]
+    (.delete (java.io.File. filename)))
+  
+  (count-lines filename-names)
+  (count-lines filename-titles)
+  (count-lines filename-title-ratings)
+  
+  (names->rdf-3  filename-names filename-names-rdf)
+  (names->rdf-3  filename-titles filename-titles-rdf)
+  (names->rdf-3  filename-title-ratings filename-title-rating-rdf)
+  
+
+  ;
+  )
 
 (comment
 

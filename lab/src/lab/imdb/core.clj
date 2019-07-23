@@ -60,7 +60,7 @@
               <imdb.akas.isOriginalTitle>: bool .
                
               <imdb.title.titleType>: string .
-              <imdb.title.primaryTitle>: string .
+              <imdb.title.primaryTitle>: string @index(fulltext) @count .
               <imdb.title.originalTitle>: string .
               <imdb.title.isAdult>: bool .
               <imdb.title.startYear>: int .
