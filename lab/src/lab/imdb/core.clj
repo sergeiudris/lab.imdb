@@ -73,7 +73,7 @@
               <imdb.title.startYear>: int .
               <imdb.title.endYear>: int .
               <imdb.title.runtimeMinutes>: int .
-              <imdb.title.genres>: [string]  @index(term) .
+              <imdb.title.genres>: uid .
               
               <imdb.title.directors>: uid .
               <imdb.title.writers>: uid .
@@ -95,7 +95,7 @@
               <imdb.name.primaryProfession>: [string] @index(term) .
               <imdb.name.knownForTitles>: uid .
                
-              <imdb.genre.name>: string @index (fulltext) @count .
+              <imdb.genre.name>: string @index(fulltext) @count .
                
               "
                :client        c})

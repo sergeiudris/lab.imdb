@@ -91,6 +91,57 @@
   (clojure.string/replace s #"\"" ch)
   )
 
+(defn create-ctx
+  [data specs]
+  (atom {:specs specs
+         :genres {}
+         :genres-count 1000000
+         :genres-prefix-id "gg"
+         }))
+
+(defn merge-ctx
+  [ctx part]
+  (swap! ctx merge @ctx part))
+
+(defn inc-genres-cnt!
+  [ctx]
+  (as-> nil x
+    (inc (:genres-count @ctx))
+    (merge-ctx ctx {:genres-count x})))
+
+(defn genre->id!
+  [ ctx genre]
+  (let [prefix   (:genres-prefix-id @ctx)
+        cnt      (:genres-count @ctx)
+        genres   (:genres @ctx)
+        genre-id (get genres genre)
+        id       (str prefix cnt)]
+
+    (cond
+      genre-id genre-id
+      :else (do
+              (merge-ctx ctx {:genres (merge genres {genre id})})
+              (inc-genres-cnt! ctx)
+              id)
+      )))
+
+
+
+(comment
+  
+  (def context (create-ctx {} {}))
+  
+  (inc-genres-cnt! context)
+  
+  (genre->id "asd" context)
+  
+  (get (:genres @context) "3" )
+  
+  (genre->id! context "Anime" )
+  
+  ;
+  )
+
 (defn apply-imdb-specs-val
   "Returns string. Apply specs to val"
   [attr val specs]
@@ -121,34 +172,21 @@
   
   )
 
-(defn tsv-vals->rdf-vec
-  "Returns rdf vec"
-  [id attrs vals specs]
-  (->>
-   (map (fn [val attr]
-          ; (prn (if (get-in specs [:xid attr]) (wrap-brackets val) "-"))
-          (let [val->arr (get-in specs [:array attr ] )]
-            (cond
-              (= val "\\N") nil ;(do (prn val) nil)
-              val->arr (->>
-                        (map #(tsv-vec->rdf-line id % attr specs) (val->arr val attr specs))
-                        ; flatten
-                        )
-              :else (tsv-vec->rdf-line id val attr specs))
-            )
-          ) vals attrs)
-   (keep #(if (nil? %) nil % ))
-   )
-  )
-
 
 (defn tsv-line->rdf-line
-  [line attrs specs]
-  (let [xs   (split-tab line)
-        id   (first xs)
-        vals (rest xs)]
+  [line attrs specs ctx]
+  (let [elems   (split-tab line)
+        id   (first elems)
+        vals (rest elems)]
     (->>
-     (tsv-vals->rdf-vec id attrs vals specs)
+     (map (fn [val attr]
+          ; (prn (if (get-in specs [:xid attr]) (wrap-brackets val) "-"))
+            (let [val->arr (get-in specs [:array attr])]
+              (cond
+                (= val "\\N") nil ;(do (prn val) nil)
+                val->arr (map #(tsv-vec->rdf-line id % attr specs) (val->arr val attr specs ctx))
+                :else (tsv-vec->rdf-line id val attr specs)))) vals attrs)
+     (keep #(if (nil? %) nil %))
     ;  (prn)
      flatten
     ;  (map #(cstr/join " " %))
@@ -232,28 +270,33 @@
                 "startYear"         "title."
                 "endYear"           "title."
                 "runtimeMinutes"    "title."
-                "genres"            "title."}
+                "genres"            "title."
+                }
    :xid {"knownForTitles" true
          "directors" true
          "writers" true
+         "genres" true
          }
-   :val {"isAdult" (fn [val attr specs]
+   :val {"isAdult" (fn [val attr specs ]
                     ;  (prn val)
                      (if (= "\"0\"" val) "\"false\"" "\"true\""))
          }
-   :array {"genres"         (fn [val attr specs]
+   :array {"genres"         (fn [val attr specs ctx]
+                      ; (prn val)
+                              (->>
+                               (cstr/split  val #"\,")
+                               (map #(genre->id! ctx % ) )
+                               ))
+           "knownForTitles" (fn [val attr specs ctx]
                       ; (prn val)
                               (cstr/split  val #"\,"))
-           "knownForTitles" (fn [val attr specs]
-                      ; (prn val)
-                              (cstr/split  val #"\,"))
-           "directors" (fn [val attr specs]
+           "directors" (fn [val attr specs ctx]
                       ; (prn val)
                          (cstr/split  val #"\,"))
-           "writers" (fn [val attr specs]
+           "writers" (fn [val attr specs ctx]
                       ; (prn val)
                       (cstr/split  val #"\,"))
-           "primaryProfession" (fn [val attr specs]
+           "primaryProfession" (fn [val attr specs ctx]
                       ; (prn val)
                                  (cstr/split  val #"\,"))
            }
@@ -337,8 +380,22 @@
           ;
           )))))
 
+
+(defn genres->rdf
+  [filename-out  specs ctx]
+  (with-open [writer (clojure.java.io/writer filename-out :append true)]
+    (doseq [[genre id] (:genres @ctx)]
+      (as-> nil e
+        (tsv-vec->rdf-line id genre "genre.name" specs)
+      ; (do (prn e) e)
+      ; (cstr/join \newline e)
+        (str e \newline)
+        (.write writer e)
+          ;
+        ))))
+
 (defn names->rdf-3
-  [filename-in filename-out & {:keys [limit] :or {limit 100000} }]
+  [filename-in filename-out ctx specs & {:keys [limit ] :or {limit 100000} }]
   (with-open [reader (io/reader filename-in)
               writer (clojure.java.io/writer filename-out :append true)]
     (let [data        (line-seq reader)
@@ -347,6 +404,7 @@
           header      (split-tab header-line)
           attrs       (rest header)
           lines (if limit (take limit (rest data)) (rest data) )
+          
           ]
       ; (prn header-line)
       ; (prn header)
@@ -357,7 +415,7 @@
               ]
         ; (prn (tsv-line->rdf-line (first line) attrs imdb-specs))
         (as-> nil e
-          (tsv-line->rdf-line line attrs imdb-specs)
+          (tsv-line->rdf-line line attrs specs ctx)
           (cstr/join \newline e)
           ; (str e "\n")
           (str e \newline)
@@ -365,7 +423,18 @@
           (.write writer e)
           ;
           ))
+      
       )))
+
+(defn files->rdfs
+  [filenames filename-out specs & {:keys [limits limit] :or {limit 1000000} }]
+  (let [ctx (create-ctx nil specs)]
+    (time
+     (do
+       (doseq [src filenames]
+         (names->rdf-3  src filename-out ctx specs :limit (or (get limits src) limit)))
+       (genres->rdf  filename-out  specs ctx)))))
+
 
 (comment
 
@@ -394,7 +463,7 @@
 
 
   (names->rdf-3  filename-names filename-names-rdf :limit 1000)
-  (names->rdf-3  filename-titles filename-titles-rdf :limit 1000)
+  (names->rdf-3  filename-titles filename-titles-rdf :limit 100)
   (names->rdf-3  filename-title-ratings filename-title-rating-rdf :limit 1000)
   (names->rdf-3  filename-crew filename-crew-rdf :limit 1000)
 
@@ -406,6 +475,11 @@
      (names->rdf-3  src filename-all-rdf :limit 100000)))
 
 
+  (files->rdfs [filename-names filename-titles filename-title-ratings filename-crew]
+               filename-all-rdf
+               imdb-specs
+               :limit 100000)
+
   (def c (create-client {:with-auth-header? false
                          :hostname          "server"
                          :port              9080}))
@@ -413,7 +487,7 @@
 
   (count-total-nodes c)
 
-  ; (drop-all c)
+  (drop-all c)
 
   (->
    (q {:qstring "{
@@ -453,7 +527,7 @@
        :vars    {}})
 
    (pp/pprint))
-  
+
   (->
    (q {:qstring "{
     all(func: alloftext(imdb.title.primaryTitle, \"Pauvre Pierrot\" ))  {
