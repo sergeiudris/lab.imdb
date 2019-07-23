@@ -89,7 +89,7 @@
               <imdb.principals.job>: string .
               <imdb.principals.characters>: string .
                
-              <imdb.name.primaryName>: string @index (fulltext) @count .
+              <imdb.name.primaryName>: string @index(fulltext) @count .
               <imdb.name.birthYear>: int .
               <imdb.name.deathYear>: int .
               <imdb.name.primaryProfession>: [string] @index(term) .

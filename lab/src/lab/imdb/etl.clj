@@ -439,13 +439,27 @@
 
   (->
    (q {:qstring "{
-    all(func: has(imdb.name.primaryName), first: 10)  {
+    all(func: has(imdb.name.primaryName), first: 20)  {
       imdb.name.primaryName
       imdb.name.birthYear
       imdb.name.deathYear
       imdb.name.knownForTitles {
        imdb.title.primaryTitle
+       imdb.title.genres {}
        }
+    }
+  }"
+       :client  c
+       :vars    {}})
+
+   (pp/pprint))
+  
+  (->
+   (q {:qstring "{
+    all(func: alloftext(imdb.title.primaryTitle, \"Pauvre Pierrot\" ))  {
+      imdb.title.primaryTitle
+      imdb.title.isAdult
+       imdb.title.genres {}
     }
   }"
        :client  c
