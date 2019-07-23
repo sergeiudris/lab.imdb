@@ -53,5 +53,11 @@ load_imdb(){
 
 }
 
+load_imdb_test(){
+       dc exec server bash -c "cd /opt/app; dgraph live -b 1000 -c 10 \
+     -r ./bin/test.rdf \
+     --zero zero:5080 -c 1"
+}
+
 
 "$@"

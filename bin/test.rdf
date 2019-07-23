@@ -1,0 +1,19 @@
+<tt0021418> <imdb.title.titleType> "movie" .
+<tt0021418> <imdb.title.primaryTitle> "The Storm" .
+<tt0021418> <imdb.title.originalTitle> "The Storm" .
+<tt0021418> <imdb.title.isAdult> "false"^^<xs:boolean> .
+<tt0021418> <imdb.title.startYear> "1930"^^<xs:int> .
+<tt0021418> <imdb.title.runtimeMinutes> "80"^^<xs:int> .
+<tt0021418> <imdb.title.genres> "Adventure,Drama,Western" .
+# <tt0021418> <imdb.title.genres> "Drama" .
+# <tt0021418> <imdb.title.genres> "Western" .
+
+<tt0021417> <imdb.title.titleType> "short" .
+<tt0021417> <imdb.title.primaryTitle> "The Still Alarm" .
+<tt0021417> <imdb.title.originalTitle> "The Still Alarm" .
+<tt0021417> <imdb.title.isAdult> "false"^^<xs:boolean> .
+<tt0021417> <imdb.title.startYear> "1930"^^<xs:int> .
+<tt0021417> <imdb.title.runtimeMinutes> "10"^^<xs:int> .
+<tt0021418> <imdb.title.genres> "Comedy" .
+# <tt0021417> <imdb.title.genres> "Comedy" .
+# <tt0021417> <imdb.title.genres> "Short" .
