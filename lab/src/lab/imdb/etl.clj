@@ -398,7 +398,7 @@
   (names->rdf-3  filename-title-ratings filename-title-rating-rdf :limit 1000)
   (names->rdf-3  filename-crew filename-crew-rdf :limit 1000)
 
-  (count-lines filename-all-rdf)  ; 2381324
+  (count-lines filename-all-rdf)  ; 1929083
   (.delete (java.io.File. filename-all-rdf))
 
   (time
@@ -444,7 +444,7 @@
       imdb.name.birthYear
       imdb.name.deathYear
       imdb.name.knownForTitles {
-       imdb.title.
+       imdb.title.primaryTitle
        }
     }
   }"
