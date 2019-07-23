@@ -55,8 +55,8 @@
 
 
   (set-schema {:schema-string "
-              <imdb.title.averageRating>: float .
-              <imdb.title.numVotes>: int .
+              <imdb.title.averageRating>: float @index(float) .
+              <imdb.title.numVotes>: int @index(int) .
               
               <imdb.akas.title>: uid .
               <imdb.akas.ordering>: int .

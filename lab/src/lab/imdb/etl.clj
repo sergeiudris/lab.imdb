@@ -552,6 +552,32 @@
 
    (pp/pprint))
   
+  ; high rating documentaries
+  (->
+   (q {:qstring "{
+    
+       
+       ID as var(func: has(imdb.title.primaryTitle)) {
+       imdb.title.primaryTitle
+       rating as imdb.title.averageRating
+       imdb.title.genres {
+          genre as imdb.genre.name
+       } 
+      }
+                 
+    all(func: uid (ID), first: 10) @filter(gt(val(rating), 7) AND eq(val(genre), \"Documentary\" ) ) {
+     imdb.title.primaryTitle
+     imdb.title.averageRating
+       imdb.title.genres {
+       imdb.genre.name
+       } 
+    }
+  }"
+       :client  c
+       :vars    {}})
+
+   (pp/pprint))
+  
 
 
   ;
