@@ -541,6 +541,17 @@
 
    (pp/pprint))
   
+  (->
+   (q {:qstring "{
+    all(func: has(imdb.genre.name)) {
+    imdb.genre.name
+    }
+  }"
+       :client  c
+       :vars    {}})
+
+   (pp/pprint))
+  
 
 
   ;
