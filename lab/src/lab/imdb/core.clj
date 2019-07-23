@@ -1,7 +1,10 @@
 (ns lab.imdb.core
   (:require [clojure.repl :refer :all]
             [clojure.pprint :as pp]
-            [lab.dgraph.core :refer [q create-client set-schema]])
+            [lab.dgraph.core :refer [q create-client 
+                                     set-schema 
+                                     drop-all 
+                                     count-total-nodes]])
   ;
   )
 
@@ -12,6 +15,10 @@
                          :hostname          "server"
                          :port              9080}))
 
+
+  (drop-all c)
+
+  (count-total-nodes c)
 
   (->
    (q {:qstring "{
@@ -32,21 +39,21 @@
        :vars    {}})
 
    (pp/pprint))
-  
-   (->
-    (q {:qstring "{
+
+  (->
+   (q {:qstring "{
   all(func: has(imdb.title.numVotes)) {
     count(uid)
         }
   }"
-        :client  c
-        :vars    {}})
+       :client  c
+       :vars    {}})
 
-    (pp/pprint))
+   (pp/pprint))
 
-   
-  
-  
+
+
+
   (set-schema {:schema-string "
               <imdb.title.averageRating>: float .
               <imdb.title.numVotes>: int .
@@ -71,7 +78,7 @@
               <imdb.title.directors>: uid .
               <imdb.title.writers>: uid .
                
-              <imdb.episode.series>: uid .
+              <imdb.episode.parentTconst>: uid .
               <imdb.episode.seasonNumber>: int .
               <imdb.episode.episodeNumber>: int .
                
@@ -86,12 +93,12 @@
               <imdb.name.primaryName>: string .
               <imdb.name.birthYear>: int .
               <imdb.name.deathYear>: int .
-              <imdb.name.primaryProfession>: [string] .
+              <imdb.name.primaryProfession>: [string] @index(term) .
               <imdb.name.knownForTitles>: uid .
                
               "
                :client        c})
-  
+
   (set-schema {:schema-string "
               <imdb.title.averageRating>: float @index(float) .
               <imdb.title.numVotes>: int @index(int) .
@@ -136,7 +143,7 @@
                
               "
                :client        c})
-  
-  
+
+
   ;
   )

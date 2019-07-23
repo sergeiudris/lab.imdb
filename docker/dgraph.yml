@@ -5,7 +5,7 @@ services:
     image: dgraph/dgraph:v1.0.15
     volumes:
       - type: volume
-        source: dgraph-probe
+        source: moviequery.imdb.dgraph
         target: /dgraph
         volume:
           nocopy: true
@@ -23,7 +23,7 @@ services:
     #   dockerfile: ./Dockerfile
     volumes:
       - type: volume
-        source: dgraph-probe
+        source: moviequery.imdb.dgraph
         target: /dgraph
         volume:
           nocopy: true
@@ -40,7 +40,7 @@ services:
     image: dgraph/dgraph:v1.0.15
     volumes:
       - type: volume
-        source: dgraph-probe
+        source: moviequery.imdb.dgraph
         target: /dgraph
         volume:
           nocopy: true
@@ -63,4 +63,4 @@ services:
   #     - server
 
 volumes:
-  dgraph-probe:
+  moviequery.imdb.dgraph:

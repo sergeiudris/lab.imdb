@@ -40,6 +40,19 @@
 (def filename-titles "/opt/.data/imdb/title.basics.tsv")
 (def filename-titles-rdf "/opt/.data/imdb.rdf/title.basics.rdf")
 
+(def filename-episodes "/opt/.data/imdb/title.episode.tsv")
+(def filename-episodes-rdf "/opt/.data/imdb.rdf/title.episode.rdf")
+
+(def filename-akas "/opt/.data/imdb/title.akas.tsv")
+(def filename-akas-rdf "/opt/.data/imdb.rdf/title.akas.rdf")
+
+(def filename-crew "/opt/.data/imdb/title.crew.tsv")
+(def filename-crew-rdf "/opt/.data/imdb.rdf/title.crew.rdf")
+
+(def filename-principals "/opt/.data/imdb/title.principals.tsv")
+(def filename-principals-rdf "/opt/.data/imdb.rdf/title.principals.rdf")
+
+
 (def filename-all-rdf "/opt/.data/imdb.rdf/all.rdf")
 
 
@@ -218,7 +231,8 @@
                 "runtimeMinutes"    "title."
                 "genres"            "title."}
    :xid {"knownForTitles" true
-         
+         "directors" true
+         "writers" true
          }
    :val {"isAdult" (fn [val attr specs]
                     ;  (prn val)
@@ -229,7 +243,17 @@
                               (cstr/split  val #"\,"))
            "knownForTitles" (fn [val attr specs]
                       ; (prn val)
-                              (cstr/split  val #"\,"))}
+                              (cstr/split  val #"\,"))
+           "directors" (fn [val attr specs]
+                      ; (prn val)
+                         (cstr/split  val #"\,"))
+           "writers" (fn [val attr specs]
+                      ; (prn val)
+                      (cstr/split  val #"\,"))
+           "primaryProfession" (fn [val attr specs]
+                      ; (prn val)
+                                 (cstr/split  val #"\,"))
+           }
    }
   )
 
@@ -311,7 +335,7 @@
           )))))
 
 (defn names->rdf-3
-  [filename-in filename-out]
+  [filename-in filename-out & {:keys [limit] :or {limit 100000} }]
   (with-open [reader (io/reader filename-in)
               writer (clojure.java.io/writer filename-out :append true)]
     (let [data        (line-seq reader)
@@ -319,13 +343,14 @@
           header-line (first data)
           header      (split-tab header-line)
           attrs       (rest header)
+          lines (if limit (take limit (rest data)) (rest data) )
           ]
       ; (prn header-line)
       ; (prn header)
       ; (prn attrs)
       (doseq [
               ; line (rest data)
-              line (take 100000 (rest data))
+              line lines
               ]
         ; (prn (tsv-line->rdf-line (first line) attrs imdb-specs))
         (as-> nil e
@@ -344,22 +369,38 @@
   (def orig-files [filename-names
                    filename-titles
                    filename-title-ratings])
-  
+
   (def rdf-files [filename-title-rating-rdf
                   filename-names-rdf
-                  filename-titles-rdf])
+                  filename-titles-rdf
+                  filename-episodes-rdf
+                  filename-crew-rdf
+                  filename-all-rdf])
 
   (doseq [filename rdf-files]
     (.delete (java.io.File. filename)))
+
+  (count-lines filename-names)  ;  9459601
+  (count-lines filename-titles)  ;  6018812
+  (count-lines filename-title-ratings)  ;954350
+  (count-lines filename-crew)  ;  6018812
+  (count-lines filename-akas)  ;  3808942
+  (count-lines filename-episodes)  ;  4190729
+  (count-lines filename-principals)  ;  34717826
+
+
+
+  (names->rdf-3  filename-names filename-names-rdf :limit 1000)
+  (names->rdf-3  filename-titles filename-titles-rdf :limit 1000)
+  (names->rdf-3  filename-title-ratings filename-title-rating-rdf :limit 1000)
+  (names->rdf-3  filename-crew filename-crew-rdf :limit 1000)
+
+
+  (.delete (java.io.File. filename-all-rdf))
   
-  (count-lines filename-names)
-  (count-lines filename-titles)
-  (count-lines filename-title-ratings)
-  
-  (names->rdf-3  filename-names filename-names-rdf)
-  (names->rdf-3  filename-titles filename-titles-rdf)
-  (names->rdf-3  filename-title-ratings filename-title-rating-rdf)
-  
+  (doseq [src [filename-names filename-titles filename-title-ratings filename-crew]]
+    (names->rdf-3  filename-names filename-all-rdf :limit 100000))
+
 
   ;
   )
