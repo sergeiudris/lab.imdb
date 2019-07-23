@@ -1,7 +1,10 @@
 (ns lab.imdb.etl
   (:require [clojure.repl :refer :all]
             [clojure.pprint :as pp]
-            [lab.dgraph.core :refer [q create-client mutate mutate-del set-schema]]
+            [lab.dgraph.core :refer [q create-client
+                                    drop-all
+                                     count-total-nodes
+                                     mutate mutate-del set-schema]]
             ; [clojure.data.csv :as csv]
             [lab.csv :as csv]
             [clojure.java.io :as io]
@@ -395,11 +398,60 @@
   (names->rdf-3  filename-title-ratings filename-title-rating-rdf :limit 1000)
   (names->rdf-3  filename-crew filename-crew-rdf :limit 1000)
 
-
+  (count-lines filename-all-rdf)  ; 2381324
   (.delete (java.io.File. filename-all-rdf))
-  
-  (doseq [src [filename-names filename-titles filename-title-ratings filename-crew]]
-    (names->rdf-3  filename-names filename-all-rdf :limit 100000))
+
+  (time
+   (doseq [src [filename-names filename-titles filename-title-ratings filename-crew]]
+     (names->rdf-3  src filename-all-rdf :limit 100000)))
+
+
+  (def c (create-client {:with-auth-header? false
+                         :hostname          "server"
+                         :port              9080}))
+
+
+  (count-total-nodes c)
+
+  ; (drop-all c)
+
+  (->
+   (q {:qstring "{
+    all(func: has(imdb.name.primaryName)) {
+    count(uid)
+    }
+  }"
+       :client  c
+       :vars    {}})
+
+   (pp/pprint))
+
+  (->
+   (q {:qstring "{
+    all(func: has(imdb.title.primaryTitle)) {
+    count(uid)
+    }
+  }"
+       :client  c
+       :vars    {}})
+
+   (pp/pprint))
+
+  (->
+   (q {:qstring "{
+    all(func: has(imdb.name.primaryName), first: 10)  {
+      imdb.name.primaryName
+      imdb.name.birthYear
+      imdb.name.deathYear
+      imdb.name.knownForTitles {
+       imdb.title.
+       }
+    }
+  }"
+       :client  c
+       :vars    {}})
+
+   (pp/pprint))
 
 
   ;
@@ -414,6 +466,9 @@
   (read-nth-line filename-titles 525045)
   
   (read-nth-line filename-titles 525044)
+  
+  (read-nth-line filename-names 100)
+  
 
 ;tt0544863	tvEpisode	"Consuela" (Or 'The New Mrs Saunders')	"Consuela" (Or 'The New Mrs Saunders')	0	1986	\N	36	Comedy
 

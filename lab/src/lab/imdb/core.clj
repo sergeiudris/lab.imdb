@@ -73,7 +73,7 @@
               <imdb.title.startYear>: int .
               <imdb.title.endYear>: int .
               <imdb.title.runtimeMinutes>: int .
-              <imdb.title.genres>: [string] .
+              <imdb.title.genres>: [string]  @index(term) .
               
               <imdb.title.directors>: uid .
               <imdb.title.writers>: uid .
@@ -89,8 +89,7 @@
               <imdb.principals.job>: string .
               <imdb.principals.characters>: string .
                
-              <imdb.name.name>: string @index(exact,fulltext) .
-              <imdb.name.primaryName>: string .
+              <imdb.name.primaryName>: string @index (fulltext) @count .
               <imdb.name.birthYear>: int .
               <imdb.name.deathYear>: int .
               <imdb.name.primaryProfession>: [string] @index(term) .
