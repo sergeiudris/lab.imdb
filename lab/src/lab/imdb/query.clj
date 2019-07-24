@@ -212,7 +212,46 @@
        }
     }
   }" c)
+  
+  (qry "{
 
+      all(func: has(imdb.title.primaryTitle)) @filter(gt(imdb.title.averageRating,7)) {
+       count(uid)
+      } 
+   
+  }" c)
+  
+  (qry "{
+
+      documentaries as var(func: has(imdb.title.primaryTitle)) @filter(ge(imdb.title.averageRating,8.3)) @cascade {
+        name: imdb.title.primaryTitle
+        genres: imdb.title.genres @filter(allofterms(imdb.genre.name,\"Documentary\")) {
+          genre: imdb.genre.name
+        }
+      }
+      all(func: uid(documentaries)) {
+       count(uid)
+       } 
+  }" c)
+  
+   (qry "{
+
+      documentaries as var(func: has(imdb.title.primaryTitle)) 
+        @filter(gt(imdb.title.averageRating,8.3) AND anyoftext(imdb.title.primaryTitle, \"cow\"))
+        @cascade {
+        name: imdb.title.primaryTitle
+        genres: imdb.title.genres @filter(allofterms(imdb.genre.name,\"Documentary\")) {
+          genre: imdb.genre.name
+        }
+      }
+      all(func: uid(documentaries), offset: 5, first: 10) {
+       title: imdb.title.primaryTitle
+       genres: imdb.title.genres {
+        genre: imdb.genre.name
+        }
+       } 
+  }" c)
+   
 
 ;
   )
