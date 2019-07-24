@@ -1,6 +1,7 @@
 (ns main
   (:require [dev.nrepl]
             [dev.core]
+            [dev.pedestal.server]
             [lab.dgraph.core]
             [lab.dgraph.sample]
             [lab.imdb.core]
@@ -14,6 +15,7 @@
 
 (defn -dev  [& args]
   (dev.nrepl/-main)
+  (dev.pedestal.server/run-dev)
   )
 
 (defn -main  [& args]

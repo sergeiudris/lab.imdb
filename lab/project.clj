@@ -39,6 +39,10 @@
                 ;  [io.grpc/grpc-all "1.22.1"]
                 ;  [io.grpc/grpc-protobuf "1.22.1"]
 
+                 [io.pedestal/pedestal.service       "0.5.7"]
+                 [io.pedestal/pedestal.service-tools "0.5.7"] ;; Only needed for ns-watching; WAR tooling
+                 [io.pedestal/pedestal.jetty         "0.5.7"]
+                 [org.clojure/tools.namespace "0.2.11"]
 
                  ;
                  ]
