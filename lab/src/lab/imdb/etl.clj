@@ -468,7 +468,8 @@
   (names->rdf-3  filename-title-ratings filename-title-rating-rdf :limit 1000)
   (names->rdf-3  filename-crew filename-crew-rdf :limit 1000)
 
-  (count-lines filename-all-rdf)  ; 1929083
+  (count-lines filename-all-rdf)  ; 1929083  94024551
+  (count-lines filename-sample-rdf)  ; 17291723  
   (.delete (java.io.File. filename-all-rdf))
 
   ; (time
@@ -479,7 +480,7 @@
   (files->rdfs [filename-names filename-titles filename-title-ratings filename-crew]
                filename-sample-rdf
                imdb-specs
-               :limit 10000
+               :limit 1000000
                )
   
   ; (cstr/escape "Fred /3 Astaire" {\3 "\\" })
