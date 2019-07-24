@@ -73,4 +73,14 @@ load_test(){
      --zero zero:5080 -c 1"
 }
 
+bulk(){
+   bash bin/dgraph dc exec server bash -c "cd /opt/app; \
+      dgraph bulk -s .data/imdb.rdf/imdb.schema \
+     -r .data/imdb.rdf/all.rdf \
+     --map_shards=4 --reduce_shards=2 \
+     --num_go_routines=6 \
+     --http 0.0.0.0:8000 \
+     --zero zero:5080"
+}
+
 "$@"

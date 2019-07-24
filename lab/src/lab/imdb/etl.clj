@@ -161,14 +161,16 @@
 (defn tsv-vec->rdf-line
   [id val attr specs]
   (as-> val e
-    (replace-double-quotes e)
-   (vector (wrap-brackets id)
-           (wrap-brackets (apply-imdb-specs-attr attr specs))
-           (apply-imdb-specs-val attr
-                                 (if (get-in specs [:xid attr]) (wrap-brackets e) (wrap-quotes e))
-                                 specs)
-           ".")
-   (cstr/join " " e))
+    ; (replace-double-quotes e)
+    (cstr/escape e {\\ "\\"})
+    (cstr/escape e {\" "\""})
+    (vector (wrap-brackets id)
+            (wrap-brackets (apply-imdb-specs-attr attr specs))
+            (apply-imdb-specs-val attr
+                                  (if (get-in specs [:xid attr]) (wrap-brackets e) (wrap-quotes e))
+                                  specs)
+            ".")
+    (cstr/join " " e))
   
   )
 
@@ -390,7 +392,7 @@
         ))))
 
 (defn names->rdf-3
-  [filename-in filename-out ctx specs & {:keys [limit ] :or {limit 100000} }]
+  [filename-in filename-out ctx specs & {:keys [limit ]  }]
   (with-open [reader (io/reader filename-in)
               writer (clojure.java.io/writer filename-out :append true)]
     (let [data        (line-seq reader)
@@ -422,7 +424,7 @@
       )))
 
 (defn files->rdfs
-  [filenames filename-out specs & {:keys [limits limit] :or {limit 1000000} }]
+  [filenames filename-out specs & {:keys [limits limit] }]
   (let [ctx (create-ctx nil specs)]
     (time
      (do
@@ -473,7 +475,15 @@
   (files->rdfs [filename-names filename-titles filename-title-ratings filename-crew]
                filename-all-rdf
                imdb-specs
-               :limit 100000)
+              ;  :limit 100000
+               )
+  
+  ; (cstr/escape "Fred /3 Astaire" {\3 "\\" })
+  
+  ; (cstr/replace "Fred /\ Astaire" #"A" "3"  )
+  
+  ; (cstr/escape "a b \" " {\" "\""})
+  
 
   (def c (create-client {:with-auth-header? false
                          :hostname          "server"

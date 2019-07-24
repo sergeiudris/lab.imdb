@@ -23,5 +23,8 @@ term(){
    dc exec $1 bash -c "bash;"
 }
 
+permis(){
+    sudo chmod 777 ./.data/imdb.rdf/*
+}
 
 "$@"

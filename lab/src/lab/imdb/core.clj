@@ -1,6 +1,7 @@
 (ns lab.imdb.core
   (:require [clojure.repl :refer :all]
             [clojure.pprint :as pp]
+            [clojure.java.io :as io]
             [lab.dgraph.core :refer [q create-client 
                                      set-schema 
                                      drop-all 
@@ -31,8 +32,8 @@
      :vars    {}})
 
  (pp/pprint))
-
-  (set-schema {:schema-string "
+  
+  (def schema-string "
               <imdb.title.averageRating>: float @index(float) .
               <imdb.title.numVotes>: int @index(int) .
               
@@ -75,7 +76,11 @@
                
               <imdb.genre.name>: string @index(fulltext,term) @count .
                
-              "
+              ")
+  
+  (spit "/opt/.data/imdb.rdf/imdb.schema" schema-string)
+
+  (set-schema {:schema-string schema-string
                :client        c})
 
   (set-schema {:schema-string "
