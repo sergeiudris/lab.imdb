@@ -244,17 +244,16 @@
 
 
 (def imdb-specs
-  {:domain "imdb."
-   :suffix {"averageRating" "^^<xs:float>"
-            "numVotes"      "^^<xs:int>"
-            "birthYear"     "^^<xs:int>"
-            "deathYear"     "^^<xs:int>"
-            "name"          "@en"
-            "isAdult"       "^^<xs:boolean>"
-            "startYear"     "^^<xs:int>"
-            "endYear"     "^^<xs:int>"
-            "runtimeMinutes"  "^^<xs:int>"
-            }
+  {:domain     "imdb."
+   :suffix     {"averageRating"  "^^<xs:float>"
+                "numVotes"       "^^<xs:int>"
+                "birthYear"      "^^<xs:int>"
+                "deathYear"      "^^<xs:int>"
+                "name"           "@en"
+                "isAdult"        "^^<xs:boolean>"
+                "startYear"      "^^<xs:int>"
+                "endYear"        "^^<xs:int>"
+                "runtimeMinutes" "^^<xs:int>"}
    :subdomains {"averageRating"     "title."
                 "numVotes"          "title."
                 "primaryName"       "name."
@@ -271,36 +270,32 @@
                 "endYear"           "title."
                 "runtimeMinutes"    "title."
                 "genres"            "title."
-                }
-   :xid {"knownForTitles" true
-         "directors" true
-         "writers" true
-         "genres" true
-         }
-   :val {"isAdult" (fn [val attr specs ]
+                "directors"         "title."
+                "writers"           "title."}
+   :xid        {"knownForTitles" true
+                "directors"      true
+                "writers"        true
+                "genres"         true}
+   :val        {"isAdult" (fn [val attr specs]
                     ;  (prn val)
-                     (if (= "\"0\"" val) "\"false\"" "\"true\""))
-         }
-   :array {"genres"         (fn [val attr specs ctx]
+                            (if (= "\"0\"" val) "\"false\"" "\"true\""))}
+   :array      {"genres"            (fn [val attr specs ctx]
                       ; (prn val)
-                              (->>
-                               (cstr/split  val #"\,")
-                               (map #(genre->id! ctx % ) )
-                               ))
-           "knownForTitles" (fn [val attr specs ctx]
+                                      (->>
+                                       (cstr/split  val #"\,")
+                                       (map #(genre->id! ctx %))))
+                "knownForTitles"    (fn [val attr specs ctx]
                       ; (prn val)
-                              (cstr/split  val #"\,"))
-           "directors" (fn [val attr specs ctx]
+                                      (cstr/split  val #"\,"))
+                "directors"         (fn [val attr specs ctx]
                       ; (prn val)
-                         (cstr/split  val #"\,"))
-           "writers" (fn [val attr specs ctx]
+                                      (cstr/split  val #"\,"))
+                "writers"           (fn [val attr specs ctx]
                       ; (prn val)
-                      (cstr/split  val #"\,"))
-           "primaryProfession" (fn [val attr specs ctx]
+                                      (cstr/split  val #"\,"))
+                "primaryProfession" (fn [val attr specs ctx]
                       ; (prn val)
-                                 (cstr/split  val #"\,"))
-           }
-   }
+                                      (cstr/split  val #"\,"))}}
   )
 
 (defn in-steps
@@ -470,9 +465,9 @@
   (count-lines filename-all-rdf)  ; 1929083
   (.delete (java.io.File. filename-all-rdf))
 
-  (time
-   (doseq [src [filename-names filename-titles filename-title-ratings filename-crew]]
-     (names->rdf-3  src filename-all-rdf :limit 100000)))
+  ; (time
+  ;  (doseq [src [filename-names filename-titles filename-title-ratings filename-crew]]
+  ;    (names->rdf-3  src filename-all-rdf :limit 100000)))
 
 
   (files->rdfs [filename-names filename-titles filename-title-ratings filename-crew]
@@ -487,140 +482,11 @@
 
   (count-total-nodes c)
 
-  ; (drop-all c)
+  (drop-all c)
 
   ;
   )
 
-(comment
-  
-  (->
-   (q {:qstring "{
-    all(func: has(imdb.name.primaryName)) {
-    count(uid)
-    }
-  }"
-       :client  c
-       :vars    {}})
-   (pp/pprint))
-
-(->
- (q {:qstring "{
-    all(func: has(imdb.title.primaryTitle)) {
-    count(uid)
-    }
-  }"
-     :client  c
-     :vars    {}})
- (pp/pprint))
-
-(->
- (q {:qstring "{
-    all(func: has(imdb.name.primaryName), first: 5)  {
-      imdb.name.primaryName
-      imdb.name.birthYear
-      imdb.name.deathYear
-      imdb.name.knownForTitles {
-       imdb.title.primaryTitle
-       imdb.title.genres {
-        imdb.genre.name
-      }	
-       }
-    }
-  }"
-     :client  c
-     :vars    {}})
- (pp/pprint))
-
-(->
- (q {:qstring "{
-    all(func: anyoftext(imdb.genre.name, \"sci-fi\")) {
-    imdb.genre.name
-    }
-  }"
-     :client  c
-     :vars    {}})
- (pp/pprint))
-
-; genres list
-(->
- (q {:qstring "{
-    all(func: has(imdb.genre.name)) {
-    imdb.genre.name
-    }
-  }"
-     :client  c
-     :vars    {}})
- (pp/pprint))
-
-  ; high rating documentaries
-(->
- (q {:qstring "{
-    
-       
-       ID as var(func: has(imdb.title.primaryTitle)) {
-       imdb.title.primaryTitle
-       rating as imdb.title.averageRating
-       imdb.title.genres {
-          genre as imdb.genre.name
-       } 
-      }
-                 
-    all(func: uid (ID), first: 10) @filter(gt(val(rating), 7) AND eq(val(genre), \"Documentary\" ) ) {
-     imdb.title.primaryTitle
-     imdb.title.averageRating
-       imdb.title.genres {
-       imdb.genre.name
-       } 
-    }
-  }"
-     :client  c
-     :vars    {}})
- (pp/pprint))
-
-(->
- (q {:qstring "{
-    
-    all(func: has(imdb.title.primaryTitle), first: 10) @cascade    {
-     imdb.title.primaryTitle
-     imdb.title.averageRating
-     imdb.title.genres @filter(anyofterms(imdb.genre.name,\"Drama\")) {
-        genre: imdb.genre.name
-       } 
-    }
-  }"
-     :client  c
-     :vars    {}})
- (pp/pprint))
-
-
-(->
- (q {:qstring "{
-    
-    all(func: has(imdb.title.primaryTitle)
-     ,offset: 10
-     ,first: 10
-     #,orderasc: imdb.title.averageRating
-     ,orderdesc: imdb.title.averageRating
-     ) 
-     @cascade
-       @filter(gt(imdb.title.averageRating, 7))
-     {
-     imdb.title.primaryTitle
-     imdb.title.averageRating
-     imdb.title.genres {
-        genre: imdb.genre.name
-       } 
-    }
-  }"
-     :client  c
-     :vars    {}})
- (pp/pprint))
-
-
-  
-  ;
-  )
 
 (comment
 

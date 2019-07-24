@@ -20,36 +20,6 @@
 
   (count-total-nodes c)
 
-  (->
-   (q {:qstring "{
-  caro(func: allofterms(name@en, \"Marc Caro\")) {
-    name@en
-    director.film {
-      name@en
-    }
-  }
-  jeunet(func: allofterms(name@en, \"Jean-Pierre Jeunet\")) {
-    name@en
-    director.film {
-      name@en
-    }
-  }
-}"
-       :client  c
-       :vars    {}})
-
-   (pp/pprint))
-
-  (->
-   (q {:qstring "{
-  all(func: has(imdb.title.numVotes)) {
-    count(uid)
-        }
-  }"
-       :client  c
-       :vars    {}})
-
-   (pp/pprint))
 
 ; schema
 (->
@@ -81,10 +51,10 @@
               <imdb.title.startYear>: int .
               <imdb.title.endYear>: int .
               <imdb.title.runtimeMinutes>: int .
-              <imdb.title.genres>: uid .
+              <imdb.title.genres>: uid @reverse .
               
-              <imdb.title.directors>: uid .
-              <imdb.title.writers>: uid .
+              <imdb.title.directors>: uid @reverse .
+              <imdb.title.writers>: uid @reverse .
                
               <imdb.episode.parentTconst>: uid .
               <imdb.episode.seasonNumber>: int .
@@ -101,7 +71,7 @@
               <imdb.name.birthYear>: int .
               <imdb.name.deathYear>: int .
               <imdb.name.primaryProfession>: [string] @index(term) .
-              <imdb.name.knownForTitles>: uid .
+              <imdb.name.knownForTitles>: uid @reverse .
                
               <imdb.genre.name>: string @index(fulltext,term) @count .
                
