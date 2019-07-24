@@ -51,8 +51,16 @@
 
    (pp/pprint))
 
+; schema
+(->
+ (q {:qstring "schema(pred: [imdb.genre.name, imdb.title.genres imdb.name.primaryName]) {
+  type
+  index
+}"
+     :client  c
+     :vars    {}})
 
-
+ (pp/pprint))
 
   (set-schema {:schema-string "
               <imdb.title.averageRating>: float @index(float) .

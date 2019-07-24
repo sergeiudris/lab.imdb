@@ -546,6 +546,7 @@
 
  (pp/pprint))
 
+; genres list
 (->
  (q {:qstring "{
     all(func: has(imdb.genre.name)) {
@@ -586,11 +587,11 @@
 (->
  (q {:qstring "{
     
-    all(func: has(imdb.title.primaryTitle), first: 10 )  @filter(eq(imdb.genre.name,\"Drama \")) {
+    all(func: has(imdb.title.primaryTitle), first: 10) @cascade    {
      imdb.title.primaryTitle
      imdb.title.averageRating
-     imdb.title.genres {
-       imdb.genre.name
+     imdb.title.genres @filter(anyofterms(imdb.genre.name,\"Drama\")) {
+        genre: imdb.genre.name
        } 
     }
   }"
@@ -598,6 +599,8 @@
      :vars    {}})
 
  (pp/pprint))
+
+
 
   
   ;
