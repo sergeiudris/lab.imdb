@@ -2,7 +2,12 @@
   (:require [io.pedestal.http :as http]
             [io.pedestal.http.route :as route]
             [io.pedestal.http.body-params :as body-params]
-            [ring.util.response :as ring-resp]))
+            [ring.util.response :as ring-resp]
+            [io.pedestal.http.ring-middlewares :refer [cookies]]
+            [cheshire.core :as json]
+            [clojure.pprint :as pp]
+            [clj-http.client :as client]
+            [slingshot.slingshot :refer [throw+ try+]]))
 
 (defn about-page
   [request]
@@ -12,26 +17,86 @@
 
 (defn redirect-page
   [request]
-  (ring-resp/redirect (format "Clojure %s - served from %s"
-                              (clojure-version)
-                              (route/url-for ::about-page))))
+  (prn request)
+  (-> (ring-resp/redirect  "http://localhost:7080" 301)
+      (ring-resp/set-cookie "hello" "world")  
+      ; (assoc :session {:name "asd"})
+      )
+  )
+
+
+
+(comment
+
+  (as-> nil x
+    (try+
+     (client/post ""
+                  {:body (json/generate-string {:login    ""
+                                                :password ""})
+                   :content-type :json
+                   :accept :json
+                   :headers {}
+                   })
+     (catch [:status 500] {:keys [request-time headers body]}
+       (pp/pprint ; (json/parse-string body) 
+                  body
+                  )))
+    (do 
+      (prn (:status x))
+      (pp/pprint (keys x))
+      (pp/pprint (:cookies x))
+      (pp/pprint (-> x :body json/parse-string (get "username") ))
+      )
+    )
+
+  ;
+  )
+
+(defn stew-page
+  [req]
+  (prn req)
+  (let [
+        ; {
+        ;  login :login
+        ;  pssw  :pssw} (:params req)
+         pr (try+
+             (client/post ""
+                          {:body         (json/generate-string {:login    ""
+                                                                :password ""})
+                           :content-type :json
+                           :accept       :json
+                           :headers      {}})
+             (catch [:status 500] {:keys [request-time headers body status]}
+               (pp/pprint ; (json/parse-string body) 
+                status)))
+        cookies (-> (:cookies pr) json/generate-string (json/parse-string true) )
+        ]
+  (-> (ring-resp/response  (json/generate-string {:rand (rand-int 5)
+                                                  :status (:status pr)
+                                                  :cookies ((str cookies))
+                                                  :body   (-> pr :body json/parse-string)}))
+      ; (ring-resp/set-cookie "hello" "world")
+      ; (assoc :cookies cookies)
+      (assoc :cookies {"session_id" {:value "session-id-hash"}})
+      )))
 
 (def n (atom 0))
 
 (defn home-page
   [request]
   (swap! n inc )
-  (ring-resp/response (str "Hello World!!!! #" @n )))
+  (ring-resp/response (str "Hello World!!! #" @n )))
 
 ;; Defines "/" and "/about" routes with their associated :get handlers.
 ;; The interceptors defined after the verb map (e.g., {:get home-page}
 ;; apply to / and its children (/about).
-(def common-interceptors [(body-params/body-params) http/html-body])
+(def common-interceptors [(body-params/body-params) http/html-body cookies])
 
 ;; Tabular routes
 (def routes #{["/" :get (conj common-interceptors `home-page)]
               ["/about" :get (conj common-interceptors `about-page)]
-              ["/redirect" :get (conj common-interceptors `redirect-page)]
+              ["/r" :get (conj common-interceptors `redirect-page)]
+              ["/s" :get (conj common-interceptors `stew-page)]
               ;
               })
 
