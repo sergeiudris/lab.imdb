@@ -601,6 +601,29 @@
  (pp/pprint))
 
 
+(->
+ (q {:qstring "{
+    
+    all(func: has(imdb.title.primaryTitle)
+     ,first: 10
+     #,orderasc: imdb.title.averageRating
+     ,orderdesc: imdb.title.averageRating
+     ) 
+     @cascade
+       @filter(gt(imdb.title.averageRating, 7))
+     {
+     imdb.title.primaryTitle
+     imdb.title.averageRating
+     imdb.title.genres {
+        genre: imdb.genre.name
+       } 
+    }
+  }"
+     :client  c
+     :vars    {}})
+
+ (pp/pprint))
+
 
   
   ;
