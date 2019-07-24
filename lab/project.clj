@@ -40,7 +40,7 @@
                 ;  [io.grpc/grpc-protobuf "1.22.1"]
 
                  [io.pedestal/pedestal.service       "0.5.7"]
-                 [io.pedestal/pedestal.service-tools "0.5.7"] ;; Only needed for ns-watching; WAR tooling
+                
                  [io.pedestal/pedestal.jetty         "0.5.7"]
                  [org.clojure/tools.namespace "0.2.11"]
 
@@ -76,7 +76,8 @@
   :profiles {:dev  {:main         ^{:skip-aot true}  main
                     :aot          nil ;[dev ]
                     :aliases      {"dev" ["trampoline" "run" "-m" "main/-dev"]}
-                    :dependencies []}
+                    :dependencies [[io.pedestal/pedestal.service-tools "0.5.7"] ;; Only needed for ns-watching; WAR tooling
+                                   ]}
 
              :prod ^:leaky {:main main
                                 ;  :uberjar-name "wordcount-standalone.jar"

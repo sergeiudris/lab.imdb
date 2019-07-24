@@ -2,7 +2,10 @@
   (:gen-class) ; for -main method in uberjar
   (:require [io.pedestal.http :as server]
             [io.pedestal.http.route :as route]
+            [io.pedestal.service-tools.dev :refer [watch watch-routes-fn]]
             [dev.pedestal.service :as service]))
+
+(watch "src/dev/pedestal")
 
 ;; This is an adapted service map, that can be started and stopped
 ;; From the REPL you can call server/start and server/stop on this service

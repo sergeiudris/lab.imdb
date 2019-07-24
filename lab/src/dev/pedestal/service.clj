@@ -10,12 +10,18 @@
                               (clojure-version)
                               (route/url-for ::about-page))))
 
+(defn redirect-page
+  [request]
+  (ring-resp/redirect (format "Clojure %s - served from %s"
+                              (clojure-version)
+                              (route/url-for ::about-page))))
+
 (def n (atom 0))
 
 (defn home-page
   [request]
   (swap! n inc )
-  (ring-resp/response (str "Hello World! #" @n )))
+  (ring-resp/response (str "Hello World!!!! #" @n )))
 
 ;; Defines "/" and "/about" routes with their associated :get handlers.
 ;; The interceptors defined after the verb map (e.g., {:get home-page}
@@ -25,6 +31,7 @@
 ;; Tabular routes
 (def routes #{["/" :get (conj common-interceptors `home-page)]
               ["/about" :get (conj common-interceptors `about-page)]
+              ["/redirect" :get (conj common-interceptors `redirect-page)]
               ;
               })
 
