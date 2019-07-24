@@ -502,7 +502,6 @@
   }"
        :client  c
        :vars    {}})
-
    (pp/pprint))
 
 (->
@@ -513,7 +512,6 @@
   }"
      :client  c
      :vars    {}})
-
  (pp/pprint))
 
 (->
@@ -532,7 +530,6 @@
   }"
      :client  c
      :vars    {}})
-
  (pp/pprint))
 
 (->
@@ -543,7 +540,6 @@
   }"
      :client  c
      :vars    {}})
-
  (pp/pprint))
 
 ; genres list
@@ -555,7 +551,6 @@
   }"
      :client  c
      :vars    {}})
-
  (pp/pprint))
 
   ; high rating documentaries
@@ -581,7 +576,6 @@
   }"
      :client  c
      :vars    {}})
-
  (pp/pprint))
 
 (->
@@ -597,7 +591,6 @@
   }"
      :client  c
      :vars    {}})
-
  (pp/pprint))
 
 
@@ -605,6 +598,7 @@
  (q {:qstring "{
     
     all(func: has(imdb.title.primaryTitle)
+     ,offset: 10
      ,first: 10
      #,orderasc: imdb.title.averageRating
      ,orderdesc: imdb.title.averageRating
@@ -621,7 +615,6 @@
   }"
      :client  c
      :vars    {}})
-
  (pp/pprint))
 
 
