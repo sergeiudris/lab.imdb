@@ -1,9 +1,11 @@
 (ns lab.imdb.query
   (:require [clojure.repl :refer :all]
             [clojure.pprint :as pp]
-            [lab.dgraph.core :refer [q create-client set-schema]])
+            [lab.dgraph.core :refer [q qry create-client set-schema]])
   ;
   )
+
+
 
 
 (comment
@@ -30,7 +32,6 @@
 }"
        :client  c
        :vars    {}})
-
    (pp/pprint))
 
   (->
@@ -41,7 +42,6 @@
   }"
        :client  c
        :vars    {}})
-
    (pp/pprint))
 
 
@@ -194,23 +194,24 @@
    (pp/pprint))
 
 
-  (->
-   (q {:qstring "{
+  (qry "{
     
     all(func: has(imdb.title.writers), first: 10) @cascade    {
      imdb.title.primaryTitle
      imdb.title.averageRating
-     imdb.title.genres {
-        genre: imdb.genre.name
-       } 
+     
     }
-  }"
-       :client  c
-       :vars    {}})
-   (pp/pprint))
-
-
-
+  }" c)
+  
+  (qry "{
+    
+    all(func: has(imdb.name.primaryName), first: 10) @cascade {
+     imdb.name.primaryName
+     ~imdb.title.writers (first: 2) {
+       imdb.title.primaryTitle
+       }
+    }
+  }" c)
 
 
 ;

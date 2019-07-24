@@ -70,6 +70,14 @@
    (json/parse-string)
    ))
 
+(defn qry
+  [qstring client & {:keys [vars]
+                     :or   {vars {}}}]
+  (->
+   (q {:qstring qstring
+       :client  client
+       :vars    vars})
+   (pp/pprint)))
 
 (defn prn-members
   "Prints unique members of an instance using clojure.reflect"
