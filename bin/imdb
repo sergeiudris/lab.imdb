@@ -74,9 +74,11 @@ load_test(){
 }
 
 bulk(){
+  RDFS=".data/imdb.rdf/sample.rdf"
+  SCHEMA=".data/imdb.rdf/imdb.schema"
    bash bin/dgraph dc exec server bash -c "cd /opt/app; \
-      dgraph bulk -s .data/imdb.rdf/imdb.schema \
-     -r .data/imdb.rdf/all.rdf \
+      dgraph bulk -s $SCHEMA \
+     -r $RDFS \
      --map_shards=4 --reduce_shards=2 \
      --num_go_routines=6 \
      --http 0.0.0.0:8000 \

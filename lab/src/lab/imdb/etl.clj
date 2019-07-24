@@ -57,6 +57,8 @@
 
 
 (def filename-all-rdf "/opt/.data/imdb.rdf/all.rdf")
+(def filename-sample-rdf "/opt/.data/imdb.rdf/sample.rdf")
+
 
 
 (defn nl
@@ -444,7 +446,9 @@
                   filename-titles-rdf
                   filename-episodes-rdf
                   filename-crew-rdf
-                  filename-all-rdf])
+                  ; filename-all-rdf
+                  filename-sample-rdf
+                  ])
 
   (doseq [filename rdf-files]
     (.delete (java.io.File. filename)))
@@ -473,9 +477,9 @@
 
 
   (files->rdfs [filename-names filename-titles filename-title-ratings filename-crew]
-               filename-all-rdf
+               filename-sample-rdf
                imdb-specs
-              ;  :limit 100000
+               :limit 10000
                )
   
   ; (cstr/escape "Fred /3 Astaire" {\3 "\\" })

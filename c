@@ -2,7 +2,7 @@
 
 
 dc(){
-   docker-compose -f docker/dgraph.yml -f docker/dc.yml "$@"
+   docker-compose --compatibility -f docker/dgraph.yml -f docker/dc.yml "$@"
 }
 
 up(){
