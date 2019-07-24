@@ -95,7 +95,7 @@
               <imdb.name.primaryProfession>: [string] @index(term) .
               <imdb.name.knownForTitles>: uid .
                
-              <imdb.genre.name>: string @index(fulltext) @count .
+              <imdb.genre.name>: string @index(fulltext,term) @count .
                
               "
                :client        c})

@@ -13,6 +13,12 @@ down(){
     dc down 
 }
 
+drop(){
+    docker volume ls
+    docker volume rm docker_moviequery.imdb.dgraph
+    docker volume ls
+}
+
 term(){
    dc exec $1 bash -c "bash;"
 }

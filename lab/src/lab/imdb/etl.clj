@@ -487,8 +487,13 @@
 
   (count-total-nodes c)
 
-  (drop-all c)
+  ; (drop-all c)
 
+  ;
+  )
+
+(comment
+  
   (->
    (q {:qstring "{
     all(func: has(imdb.name.primaryName)) {
@@ -500,19 +505,19 @@
 
    (pp/pprint))
 
-  (->
-   (q {:qstring "{
+(->
+ (q {:qstring "{
     all(func: has(imdb.title.primaryTitle)) {
     count(uid)
     }
   }"
-       :client  c
-       :vars    {}})
+     :client  c
+     :vars    {}})
 
-   (pp/pprint))
+ (pp/pprint))
 
-  (->
-   (q {:qstring "{
+(->
+ (q {:qstring "{
     all(func: has(imdb.name.primaryName), first: 5)  {
       imdb.name.primaryName
       imdb.name.birthYear
@@ -525,36 +530,36 @@
        }
     }
   }"
-       :client  c
-       :vars    {}})
+     :client  c
+     :vars    {}})
 
-   (pp/pprint))
+ (pp/pprint))
 
-  (->
-   (q {:qstring "{
+(->
+ (q {:qstring "{
     all(func: anyoftext(imdb.genre.name, \"sci-fi\")) {
     imdb.genre.name
     }
   }"
-       :client  c
-       :vars    {}})
+     :client  c
+     :vars    {}})
 
-   (pp/pprint))
-  
-  (->
-   (q {:qstring "{
+ (pp/pprint))
+
+(->
+ (q {:qstring "{
     all(func: has(imdb.genre.name)) {
     imdb.genre.name
     }
   }"
-       :client  c
-       :vars    {}})
+     :client  c
+     :vars    {}})
 
-   (pp/pprint))
-  
+ (pp/pprint))
+
   ; high rating documentaries
-  (->
-   (q {:qstring "{
+(->
+ (q {:qstring "{
     
        
        ID as var(func: has(imdb.title.primaryTitle)) {
@@ -573,13 +578,28 @@
        } 
     }
   }"
-       :client  c
-       :vars    {}})
+     :client  c
+     :vars    {}})
 
-   (pp/pprint))
+ (pp/pprint))
+
+(->
+ (q {:qstring "{
+    
+    all(func: has(imdb.title.primaryTitle), first: 10 )  @filter(eq(imdb.genre.name,\"Drama \")) {
+     imdb.title.primaryTitle
+     imdb.title.averageRating
+     imdb.title.genres {
+       imdb.genre.name
+       } 
+    }
+  }"
+     :client  c
+     :vars    {}})
+
+ (pp/pprint))
+
   
-
-
   ;
   )
 
