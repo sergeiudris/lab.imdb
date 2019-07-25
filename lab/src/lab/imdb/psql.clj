@@ -144,6 +144,8 @@
                          );
                          "])
     
+     
+    
     (jdbc/execute! db ["
                          
     CREATE TABLE crew(
@@ -199,6 +201,35 @@
   ; 954349
    
   
+  
+    (jdbc/execute! db ["
+                         
+    CREATE TABLE name_titles(
+                              id SERIAL PRIMARY KEY,
+                              nconst VARCHAR(50) NOT NULL, 
+                              tconst VARCHAR (50 ) NOT NULL
+                         );
+                         "])
+
+  
+      (jdbc/execute! db ["
+                         
+    CREATE TABLE title_directors(
+                              id SERIAL PRIMARY KEY,
+                              nconst VARCHAR(50) NOT NULL, 
+                              tconst VARCHAR (50 ) NOT NULL
+                         );
+                         "])
+    
+    (jdbc/execute! db ["
+                         
+    CREATE TABLE title_writers(
+                              id SERIAL PRIMARY KEY,
+                              nconst VARCHAR(50) NOT NULL, 
+                              tconst VARCHAR (50 ) NOT NULL
+                         );
+                         "])
+
   
   
   ;
