@@ -528,6 +528,11 @@
   
   (read-nth-line filename-names 1)
   
+  (split-tab (read-nth-line filename-titles 679321))
+  
+  (split-tab (read-nth-line filename-titles 14))
+  
+  
   
   (count-lines filename-all-rdf)
   

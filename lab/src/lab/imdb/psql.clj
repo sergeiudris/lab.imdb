@@ -86,16 +86,16 @@
     CREATE TABLE titles(
                               tconst VARCHAR(50) PRIMARY KEY NOT NULL, 
                               titleType VARCHAR(50),
-                              originalTitle VARCHAR (50),
+                              primaryTitle  VARCHAR (512),
+                              originalTitle VARCHAR (512),
                               isAdult INT,
                               startYear INT,
                               endYear INT,
                               runtimeMinutes INT,
-                              genres VARCHAR (256)
+                              genres VARCHAR (512)
                          );
                          "])
   
-  (jdbc/query db ["select * from titles"])
   (jdbc/query db ["select * from titles"])
   
   
