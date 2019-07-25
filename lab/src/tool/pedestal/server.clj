@@ -1,9 +1,9 @@
-(ns dev.pedestal.server
+(ns tool.pedestal.server
   (:gen-class) ; for -main method in uberjar
   (:require [io.pedestal.http :as server]
             [io.pedestal.http.route :as route]
             [io.pedestal.service-tools.dev :refer [watch watch-routes-fn]]
-            [dev.pedestal.service :as service]))
+            [tool.pedestal.service :as service]))
 
 (watch "src/dev/pedestal")
 

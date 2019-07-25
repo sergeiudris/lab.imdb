@@ -1,7 +1,9 @@
 (ns main
-  (:require [dev.nrepl]
-            [dev.core]
-            [dev.pedestal.server]
+  (:require [tool.nrepl]
+            [tool.core]
+            [tool.io.core]
+            [tool.dgraph.core]
+            [tool.pedestal.server]
             [lab.dgraph.core]
             [lab.dgraph.sample]
             [lab.imdb.core]
@@ -23,16 +25,3 @@
   (dev.nrepl/-main)
   )
 
-(comment
-  
-  ; (Examples/hello)
-  {:hello "world"}
-
-  (System/getProperty "java.vm.version")
-  (System/getProperty "java.version")
-  (System/getProperty "java.specification.version")
-  (clojure-version)
-
-  
-  ;
-  )

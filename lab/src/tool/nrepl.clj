@@ -1,4 +1,4 @@
-(ns dev.nrepl
+(ns tool.nrepl
   (:require [nrepl.server :refer [start-server stop-server]]
             [clojure.repl :refer :all]
             [whidbey.repl]
