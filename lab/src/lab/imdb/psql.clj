@@ -15,7 +15,7 @@
   )
 
 
-(def pgdb-spec
+(def db
   {:dbtype   "postgresql"
    :dbname   "pgsqldb"
    :user     "pgsql"
@@ -25,7 +25,7 @@
 
 (comment
 
-  (jdbc/query pgdb-spec ["
+  (jdbc/execute! db ["
                          
     CREATE TABLE account(
                          user_id serial PRIMARY KEY,
@@ -37,7 +37,7 @@
                          );
                          "])
 
-  (jdbc/query pgdb-spec ["select * from account"])
+  (jdbc/query db ["select * from account"])
 
   (.getTime (java.util.Date.))
   (prn-members (java.util.Date.))
@@ -50,7 +50,7 @@
 
   (ctime/now)
 
-  (jdbc/insert! pgdb-spec "account" {"username"   "leo"
+  (jdbc/insert! db "account" {"username"   "leo"
                                      "password"   "root"
                                      "email"      "vinci@gmail.com"
                                      "created_on" (ctime/now)
@@ -72,5 +72,33 @@
 
   (f/unparse multi-parser (f/parse multi-parser "2012-02-01"))
 
+  ;
+  )
+
+
+
+(comment
+  
+  (jdbc/execute! db ["DROP TABLE titles"])
+  
+  (jdbc/execute! db ["
+                         
+    CREATE TABLE titles(
+                              tconst VARCHAR(50) PRIMARY KEY NOT NULL, 
+                              titleType VARCHAR(50),
+                              originalTitle VARCHAR (50),
+                              isAdult INT,
+                              startYear INT,
+                              endYear INT,
+                              runtimeMinutes INT,
+                              genres VARCHAR (256)
+                         );
+                         "])
+  
+  (jdbc/query db ["select * from titles"])
+  
+  
+  
+  
   ;
   )
