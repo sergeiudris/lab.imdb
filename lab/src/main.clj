@@ -7,6 +7,7 @@
             [lab.imdb.core]
             [lab.imdb.etl]
             [lab.imdb.query]
+            [lab.imdb.psql]
    ;
             )
   ;

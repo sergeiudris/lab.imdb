@@ -40,9 +40,14 @@
                 ;  [io.grpc/grpc-protobuf "1.22.1"]
 
                  [io.pedestal/pedestal.service       "0.5.7"]
-                
+
                  [io.pedestal/pedestal.jetty         "0.5.7"]
                  [org.clojure/tools.namespace "0.2.11"]
+
+                 [org.clojure/java.jdbc "0.7.9"]
+                 [org.postgresql/postgresql "42.2.6"]
+                 [clj-time "0.15.0"]
+                ;  [org.postgresql/postgresql "42.2.5.jre7"]
 
                  ;
                  ]

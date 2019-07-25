@@ -3,7 +3,11 @@
 
 dc(){
     # https://github.com/docker/compose/pull/5684
-   docker-compose --compatibility -f docker/dgraph.yml -f docker/dc.yml "$@"
+   docker-compose --compatibility \
+        -f docker/dgraph.yml \
+        -f docker/psql.yml \
+        -f docker/dc.yml \
+        "$@"
 }
 
 up(){

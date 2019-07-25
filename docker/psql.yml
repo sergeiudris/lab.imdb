@@ -1,0 +1,29 @@
+version: "3.2"
+
+services:
+  pgsql:
+    image: postgres:11.1
+    # restart: always
+    environment:
+      POSTGRES_USER: pgsql
+      POSTGRES_DB: pgsqldb
+      POSTGRES_PASSWORD: pgsql
+    volumes:
+      - type: volume
+        source: moviequery.imdb.pgsql
+        target: /var/lib/postgresql
+        volume:
+          nocopy: true
+      - "../:/opt/app"
+    stdin_open: true
+    tty: true
+
+  adminer:
+    image: adminer
+    # restart: always
+    ports:
+      - 7088:8080
+
+
+volumes:
+  moviequery.imdb.pgsql:
