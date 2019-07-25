@@ -18,6 +18,8 @@ import(){
           '/opt/app/.data/imdb/title.basics.tsv'
            DELIMITER E'\t' 
           NULL '\N'  QUOTE E'\b' ESCAPE E'\b' CSV HEADER "
+
+     #\b	U+0008	backspace
 }
 
 
