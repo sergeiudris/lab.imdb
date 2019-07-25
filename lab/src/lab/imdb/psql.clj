@@ -87,6 +87,12 @@
   
   (jdbc/query db ["select * from titles"])
   
+  (->>
+   (jdbc/query db ["select * from titles offset 5 limit 5"])
+   pp/pprint
+   )
+  
+  
   
   ;
   )
