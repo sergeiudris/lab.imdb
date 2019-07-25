@@ -17,11 +17,11 @@
 
 (def db
   {:dbtype   "postgresql"
-   :dbname   "pgsqldb"
-   :user     "pgsql"
-   :host     "pgsql"
+   :dbname   "postgresdb"
+   :user     "postgres"
+   :host     "postgres"
    :port     5432
-   :password "pgsql"})
+   :password "postgres"})
 
 (comment
 
@@ -96,6 +96,8 @@
                          "])
   
   (jdbc/query db ["select * from titles"])
+  (jdbc/query db ["select * from titles"])
+  
   
   
   

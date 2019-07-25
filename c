@@ -5,7 +5,7 @@ dc(){
     # https://github.com/docker/compose/pull/5684
    docker-compose --compatibility \
         -f docker/dgraph.yml \
-        -f docker/psql.yml \
+        -f docker/pgsql.yml \
         -f docker/dc.yml \
         "$@"
 }
@@ -18,9 +18,15 @@ down(){
     dc down 
 }
 
-drop(){
+drop_dgraph(){
     docker volume ls
     docker volume rm docker_moviequery.imdb.dgraph
+    docker volume ls
+}
+
+drop_postgres(){
+    docker volume ls
+    docker volume rm docker_moviequery.imdb.postgres
     docker volume ls
 }
 

@@ -4,7 +4,7 @@ version: "3.2"
 services:
 
   base:
-    image: movie-query/base
+    image: moviequery.base
     build:
       context: ./base
       dockerfile: ./Dockerfile
@@ -13,7 +13,7 @@ services:
     tty: true
 
   lab:
-    image: movie-query/lab
+    image: moviequery.lab
     volumes:
       - ../lab:/opt/app
       - ../.data:/opt/.data
@@ -44,3 +44,19 @@ services:
         #   cpus: '0.25'
         #   memory: 20M
 
+  load-pgsql:
+    image: moviequery.load-pgsql
+    volumes:
+      - ../load-pgsql:/opt/app
+      - ../:/opt/data
+    build:
+      context: ../load-pgsql
+      dockerfile: ./Dockerfile
+    command: tail -f /dev/null
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8096M
