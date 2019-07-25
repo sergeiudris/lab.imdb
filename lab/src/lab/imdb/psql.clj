@@ -75,13 +75,44 @@
   ;
   )
 
+(comment 
+  (jdbc/execute! db ["DROP TABLE titles"])
+  (jdbc/execute! db ["DROP TABLE names"])
+  (jdbc/execute! db ["DROP TABLE crew"])
+  (jdbc/execute! db ["DROP TABLE ratings"])
+  
+  (jdbc/execute! db ["
+                     DROP SEQUENCE table_id_seq
+                     "])
+  
+  (jdbc/query db ["select * from titles"])
+  
+  
+  ;
+  )
+
 
 
 (comment
   
-  (jdbc/execute! db ["DROP TABLE titles"])
+  (def file-dir "/opt/app/.data/imdb/" )
   
-  (jdbc/execute! db ["
+  (def file-names {:titles "title.basics.tsv"
+              :names "name.basics.tsv"
+              :crew "title.crew.tsv"
+              :ratings "title.ratings.tsv"
+              })
+  
+  (def files (reduce-kv (fn [acc k v]
+                          (assoc acc k (str files-dir v) )
+                          ) {} file-names ) )
+  
+  (jdbc/execute! db ["                     
+                     CREATE SEQUENCE table_id_seq
+                     "
+                     ])
+  
+    (jdbc/execute! db ["
                          
     CREATE TABLE titles(
                               tconst VARCHAR(50) PRIMARY KEY NOT NULL, 
@@ -95,10 +126,72 @@
                               genres VARCHAR (512)
                          );
                          "])
+    (jdbc/execute! db ["
+                         
+    CREATE TABLE names(
+                              nconst VARCHAR(50) PRIMARY KEY NOT NULL, 
+                              primaryName  VARCHAR (512),
+                              birthYear INT,
+                              deathYear INT,
+                              primaryProfession VARCHAR (512),
+                              knownForTitles VARCHAR (256)
+                         );
+                         "])
+    
+    (jdbc/execute! db ["
+                         
+    CREATE TABLE crew(
+                              id SERIAL PRIMARY KEY,
+                              tconst VARCHAR (50) NOT NULL,
+                              directors TEXT,
+                              writers TEXT
+                         );
+                         "])
+    
+    (jdbc/execute! db ["
+                         
+    CREATE TABLE ratings(
+                              id    SERIAL PRIMARY KEY,
+                              tconst VARCHAR (50) NOT NULL,
+                              averageRating FLOAT8,
+                              numVotes  INT
+                         );
+                         "])
+    
+    )
   
-  (jdbc/query db ["select * from titles"])
+  (jdbc/execute! db [(str "
+                     COPY titles FROM " 
+           "'" (:titles files) "'"
+           " DELIMITER E'\t' 
+          NULL '\\N'  QUOTE E'\b' ESCAPE E'\b' CSV HEADER 
+                     ")])
+  ; 6018811
   
+  (jdbc/execute! db [(str "
+                     COPY names FROM "
+                          "'" (:names files) "'"
+                          " DELIMITER E'\t' 
+          NULL '\\N'  QUOTE E'\b' ESCAPE E'\b' CSV HEADER 
+                     ")])
+  ; 9459600
   
+  (jdbc/execute! db [(str "
+                     COPY crew(tconst,directors,writers) FROM "
+                          "'" (:crew files) "'"
+                          " DELIMITER E'\t' 
+          NULL '\\N'  QUOTE E'\b' ESCAPE E'\b' CSV HEADER 
+                     ")])
+  ; 6018811
+  
+  (jdbc/execute! db [(str "
+                     COPY ratings(tconst,averageRating,numVotes) FROM "
+                          "'" (:ratings files) "'"
+                          " DELIMITER E'\t' 
+          NULL '\\N'  QUOTE E'\b' ESCAPE E'\b' CSV HEADER 
+                     ")])
+  ; 954349
+   
   
   
   
