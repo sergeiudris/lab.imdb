@@ -14,10 +14,11 @@ qry(){
 
 import(){
      PGPASSWORD=postgres psql -h postgres -p 5432 -d postgresdb -U postgres \
-     -c "COPY titles FROM  
-        '/opt/app/.data/imdb/title.basics.tsv'
-        DELIMITER E'\t' 
-        CSV NULL '\N' HEADER QUOTE '\"' ESCAPE '\' ;"
+     -c   "COPY titles FROM  
+          '/opt/app/.data/imdb/title.basics.tsv'
+           DELIMITER E'\t' 
+          NULL '\N'  QUOTE E'\b' ESCAPE E'\b' CSV HEADER "
 }
+
 
 "$@"
