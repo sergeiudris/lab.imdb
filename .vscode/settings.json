@@ -36,7 +36,9 @@
             // "list.activeSelectionForeground": "#e0e0e0"
             "list.activeSelectionBackground": "#e0e0e050",
             "sideBar.foreground" : "#b0bec5"
-        }
+        },
+        "editorError.foreground": "#ff0000",
+        "editorWarning.foreground": "#000"
     },
     "editor.tokenColorCustomizations": {
         "[-One Dark Pro Vivid]": {
@@ -294,6 +296,7 @@
     "calva.syncReplNamespaceToCurrentFile": true,
     "calva.openBrowserWhenFigwheelStarted": false,
     "clojureWarrior.commentFormStyle": {"textDecoration": "none; opacity: 1"},
-    "explorer.openEditors.visible": 0
+    "explorer.openEditors.visible": 0,
+    "clojureWarrior.enableBracketColors": true,
 
 }
