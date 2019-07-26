@@ -1,7 +1,7 @@
 (ns lab.imdb.etl
   (:require [clojure.repl :refer :all]
             [clojure.pprint :as pp]
-            [lab.dgraph.core :refer [q create-client
+            [tool.dgraph.core :refer [q create-client
                                     drop-all
                                      count-total-nodes
                                      mutate mutate-del set-schema]]

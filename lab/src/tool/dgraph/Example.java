@@ -1,4 +1,4 @@
-package lab.dgraph;
+package tool.dgraph;
 
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;

@@ -4,9 +4,8 @@
             [tool.io.core]
             [tool.dgraph.core]
             [tool.pedestal.server]
-            [lab.dgraph.core]
-            [lab.dgraph.sample]
-            [lab.imdb.core]
+            [lab.dgraph]
+            [lab.imdb.schema]
             [lab.imdb.etl]
             [lab.imdb.query]
             [lab.imdb.psql]
@@ -17,11 +16,11 @@
 
 
 (defn -dev  [& args]
-  (dev.nrepl/-main)
-  (dev.pedestal.server/run-dev)
+  (tool.nrepl/-main)
+  (tool.pedestal.server/run-dev)
   )
 
 (defn -main  [& args]
-  (dev.nrepl/-main)
+  (tool.nrepl/-main)
   )
 

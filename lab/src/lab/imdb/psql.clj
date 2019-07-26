@@ -5,7 +5,7 @@
             [clojure.java.io :as io]
             [clojure.string :as cstr]
             [clojure.java.jdbc :as jdbc]
-            [dev.core :refer [prn-members]]
+            [tool.core :refer [prn-members]]
             [clj-time.core :as ctime]
             [clj-time.format :as ctimef]
             [clj-time.jdbc]
@@ -100,25 +100,22 @@
 
 
 (comment
-  
-  (def file-dir "/opt/app/.data/imdb/" )
-  
-  (def file-names {:titles "title.basics.tsv"
-              :names "name.basics.tsv"
-              :crew "title.crew.tsv"
-              :ratings "title.ratings.tsv"
-              })
-  
+
+  (def file-dir "/opt/app/.data/imdb/")
+
+  (def file-names {:titles  "title.basics.tsv"
+                   :names   "name.basics.tsv"
+                   :crew    "title.crew.tsv"
+                   :ratings "title.ratings.tsv"})
+
   (def files (reduce-kv (fn [acc k v]
-                          (assoc acc k (str files-dir v) )
-                          ) {} file-names ) )
-  
+                          (assoc acc k (str files-dir v))) {} file-names))
+
   (jdbc/execute! db ["                     
                      CREATE SEQUENCE table_id_seq
-                     "
-                     ])
-  
-    (jdbc/execute! db ["
+                     "])
+
+  (jdbc/execute! db ["
                          
     CREATE TABLE titles(
                               tconst VARCHAR(50) PRIMARY KEY NOT NULL, 
@@ -132,7 +129,7 @@
                               genres VARCHAR (512)
                          );
                          "])
-    (jdbc/execute! db ["
+  (jdbc/execute! db ["
                          
     CREATE TABLE names(
                               nconst VARCHAR(50) PRIMARY KEY NOT NULL, 
@@ -143,10 +140,10 @@
                               knownForTitles VARCHAR (256)
                          );
                          "])
-    
-     
-    
-    (jdbc/execute! db ["
+
+
+
+  (jdbc/execute! db ["
                          
     CREATE TABLE crew(
                               id SERIAL PRIMARY KEY,
@@ -155,8 +152,8 @@
                               writers TEXT
                          );
                          "])
-    
-    (jdbc/execute! db ["
+
+  (jdbc/execute! db ["
                          
     CREATE TABLE ratings(
                               id    SERIAL PRIMARY KEY,
@@ -165,17 +162,16 @@
                               numVotes  INT
                          );
                          "])
-    
-    )
-  
+
+
   (jdbc/execute! db [(str "
-                     COPY titles FROM " 
-           "'" (:titles files) "'"
-           " DELIMITER E'\t' 
+                     COPY titles FROM "
+                          "'" (:titles files) "'"
+                          " DELIMITER E'\t' 
           NULL '\\N'  QUOTE E'\b' ESCAPE E'\b' CSV HEADER 
                      ")])
   ; 6018811
-  
+
   (jdbc/execute! db [(str "
                      COPY names FROM "
                           "'" (:names files) "'"
@@ -183,7 +179,7 @@
           NULL '\\N'  QUOTE E'\b' ESCAPE E'\b' CSV HEADER 
                      ")])
   ; 9459600
-  
+
   (jdbc/execute! db [(str "
                      COPY crew(tconst,directors,writers) FROM "
                           "'" (:crew files) "'"
@@ -191,7 +187,7 @@
           NULL '\\N'  QUOTE E'\b' ESCAPE E'\b' CSV HEADER 
                      ")])
   ; 6018811
-  
+
   (jdbc/execute! db [(str "
                      COPY ratings(tconst,averageRating,numVotes) FROM "
                           "'" (:ratings files) "'"
@@ -199,10 +195,10 @@
           NULL '\\N'  QUOTE E'\b' ESCAPE E'\b' CSV HEADER 
                      ")])
   ; 954349
-   
-  
-  
-    (jdbc/execute! db ["
+
+
+
+  (jdbc/execute! db ["
                          
     CREATE TABLE name_titles(
                               id SERIAL PRIMARY KEY,
@@ -211,8 +207,8 @@
                          );
                          "])
 
-  
-      (jdbc/execute! db ["
+
+  (jdbc/execute! db ["
                          
     CREATE TABLE title_directors(
                               id SERIAL PRIMARY KEY,
@@ -220,8 +216,8 @@
                               tconst VARCHAR (50 ) NOT NULL
                          );
                          "])
-    
-    (jdbc/execute! db ["
+
+  (jdbc/execute! db ["
                          
     CREATE TABLE title_writers(
                               id SERIAL PRIMARY KEY,
@@ -230,7 +226,10 @@
                          );
                          "])
 
-  
-  
-  ;
+
+;
   )
+  
+
+
+  

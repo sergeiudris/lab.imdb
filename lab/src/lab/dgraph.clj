@@ -1,12 +1,14 @@
-(ns lab.dgraph.core
+(ns lab.dgraph
   (:require [clojure.repl :refer :all]
             [cheshire.core :as json]
             [clojure.pprint :as pp]
             [clojure.reflect :refer :all]
-
+            [tool.dgraph.core :refer [create-client q qry q-res
+                                      mutate mutate-del drop-all set-schema]]
+            [tool.core :refer [prn-members]]
    ;
             )
-  (:import (lab.dgraph Example)
+  (:import 
            (io.grpc ManagedChannel ManagedChannelBuilder Metadata
                     Metadata$Key)
            (io.grpc.stub MetadataUtils)
@@ -21,110 +23,11 @@
   ;
   )
 
-(defn create-client
-  "create DgraphClient"
-  [{:keys [with-auth-header?
-           hostname
-           port]}]
-  (let [ch   (->
-              (ManagedChannelBuilder/forAddress hostname port)
-              (.usePlaintext true)
-              (.build))
-        stub (DgraphGrpc/newStub ch)]
-    (cond
-      with-auth-header? (let [md   (->
-                                    (Metadata.)
-                                    (.put
-                                     (Metadata$Key/of "auth-token" Metadata/ASCII_STRING_MARSHALLER)
-                                     "the-auth-token-value"))
-                              stub (MetadataUtils/attachHeaders stub md)]
-                          (DgraphClient. (into-array [stub])))
-      :else (DgraphClient. (into-array [stub]))
-      ; :else stub
-      
-      )))
-
-(defn q-res
-  "returns a Response protocol buffer object "
-  [{:keys [client
-           qstring
-           vars]}]
-  (let [res (->
-             (.newTransaction client)
-             (.queryWithVars qstring vars))]
-    res))
-
-(defn res->str
-  "Returns Response protobuf object to string"
-  [res]
-  (->
-   (.getJson res)
-   (.toStringUtf8)))
-
-(defn q
-  "Queries Dgraph"
-  [opts]
-  (->
-   (q-res opts)
-   (res->str)
-   (json/parse-string)
-   ))
-
-(defn qry
-  [qstring client & {:keys [vars]
-                     :or   {vars {}}}]
-  (->
-   (q {:qstring qstring
-       :client  client
-       :vars    vars})
-   (pp/pprint)))
-
-(defn prn-members
-  "Prints unique members of an instance using clojure.reflect"
-  [inst]
-  (->>
-   (reflect inst)
-   (:members)
-   (sort-by :name)
-   (map #(:name %))
-   (set)
-   (into [])
-   (sort)
-   pp/pprint
-  ;  (pp/print-table )
-  ;  (pp/print-table [:name :flags :parameter-types])
-   ))
-
-(defn count-total-nodes
-  [c]
-   (->
-    (q {:qstring "
-     {
-  total (func: has (_predicate_) ) {
-    count(uid)
-  }
-} 
-      "
-        :client  c
-        :vars    {}})
-    (pp/pprint))
-  )
 
 
 (comment
 
   Metadata$Key
-
-  (Example/hello)
-
-  (Example/run)
-
-  (Example/prn "asd")
-
-
-  (Example/main)
-
-  (Example/prn)
 
 
   (.println (System/out) "hi")
@@ -194,50 +97,6 @@
   )
 
 
-(defn mutate
-  "Transact dgraph mutation"
-  [{:keys [data client]}]
-  (let [txn (.newTransaction client)]
-    (try
-      (let [mu  (->
-                 (DgraphProto$Mutation/newBuilder)
-                 (.setSetJson (ByteString/copyFromUtf8 (json/generate-string data)))
-                 (.build))]
-        (.mutate txn mu)
-        (.commit txn)
-        )
-      (catch Exception e (str "caught exception: " (.getMessage e)))
-      (finally (.discard txn)))
-    ;
-    ))
-
-(defn mutate-del
-  "Transact dgraph mutation"
-  [{:keys [s client]}]
-  (let [txn (.newTransaction client)]
-    (try
-      (let [mu  (->
-                 (DgraphProto$Mutation/newBuilder)
-                 (.setDelNquads (ByteString/copyFromUtf8 s))
-                 (.build))]
-        (.mutate txn mu)
-        (.commit txn))
-      (catch Exception e (str "caught exception: " (.getMessage e)))
-      (finally (.discard txn)))
-    ;
-    ))
-
-; https://github.com/dgraph-io/dgraph4j#alter-the-database
-; https://github.com/dgraph-io/dgraph/pull/1547
-(defn drop-all
-  "Drop all"
-  [client]
-  (let [op (->
-            (DgraphProto$Operation/newBuilder)
-            (.setDropAll true)
-            (.build))]
-    (.alter client op)))
-
 (comment
   
   (prn-members (DgraphProto$Mutation/newBuilder))
@@ -258,16 +117,6 @@
   
   ;;;
   )
-
-(defn set-schema
-  "Set the dgraph schema"
-  [{:keys [schema-string
-           client]}]
-  (let [op (->
-            (DgraphProto$Operation/newBuilder)
-            (.setSchema schema-string)
-            (.build))]
-    (.alter client op)))
 
 (comment
 

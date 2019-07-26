@@ -3,6 +3,7 @@
             [clojure.reflect :refer :all]
             [clojure.pprint :as pp]
             [clojure.java.javadoc :refer [javadoc]]
+            [puget.printer :as pug]
             ;
             ))
 
@@ -21,9 +22,17 @@
   )
 
 
-(defn parse-int [number-string]
+(defn try-parse-int 
+  "returns number or nil"
+  [number-string]
   (try (Integer/parseInt number-string)
        (catch Exception e nil)))
+
+(defn try-parse-float
+  "returns number or nil"
+  [number-string]
+  (try (Float/parseFloat number-string) 
+       (catch Exception e number-string)))
 
 (defn replace-double-quotes
   [s & {:keys [ch]
@@ -83,3 +92,35 @@
   )
 
 
+(defn partition-into-vecs
+  "Returns vec of vecs "
+  [part-size v]
+  (->>
+   (partition part-size v)
+   (mapv vec)))
+
+
+(defn cprn
+  "color-prints a value "
+  ([x]
+   (pug/cprint x nil))
+  ([x opts]
+   (pug/cprint x opts)))
+
+(defn sytem-prn
+  "print using System.out.println"
+  [msg]
+  (.println (System/out) msg))
+
+(comment
+
+  (cprn [1 2 3 4 5])
+
+  (sytem-prn "3")
+  ;;;
+  )
+
+(defn rand-int-in-range
+  "returns random int in range a b"
+  [a b]
+  (int (- b (* (rand) (- b a)))))

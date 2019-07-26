@@ -2,7 +2,7 @@
   (:require [clojure.repl :refer :all]
             [clojure.pprint :as pp]
             [clojure.java.io :as io]
-            [lab.dgraph.core :refer [q create-client 
+            [tool.dgraph.core :refer [q create-client 
                                      set-schema 
                                      drop-all 
                                      count-total-nodes]])

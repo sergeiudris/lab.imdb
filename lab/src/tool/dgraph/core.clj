@@ -6,7 +6,7 @@
 
    ;
             )
-  (:import (lab.dgraph Example)
+  (:import (tool.dgraph Example)
            (io.grpc ManagedChannel ManagedChannelBuilder Metadata
                     Metadata$Key)
            (io.grpc.stub MetadataUtils)
@@ -21,6 +21,21 @@
   ;
   )
 
+
+(comment
+
+
+  (Example/run)
+
+  (Example/prn "asd")
+
+
+  (Example/main)
+
+  (Example/prn)
+
+;  
+  )
 
 (defn create-client
   "create DgraphClient"
@@ -45,6 +60,7 @@
       
       )))
 
+
 (defn q-res
   "returns a Response protocol buffer object "
   [{:keys [client
@@ -66,28 +82,11 @@
   "Queries Dgraph"
   [opts]
   (->
-   (q-res
-   (q {:qstring qstring
-       :client  client
-       :vars    vars})
-   (pp/pprint)))
-   (res->
-   (q {:qstring qstring
-       :client  client
-       :vars    vars})
-   (pp/pprint)))
-   (json/
-   (q {:qstring qstring
-       :client  client
-       :vars    vars})
-   (pp/pprint)))string)
-   ))
+   (q-res opts)
+   (res->str)
+   (json/parse-string)))
 
 (defn qry
-   (q {:qstring qstring
-       :client  client
-       :vars    vars})
-   (pp/pprint)))
   [qstring client & {:keys [vars]
                      :or   {vars {}}}]
   (->

@@ -1,7 +1,7 @@
 (ns lab.imdb.query
   (:require [clojure.repl :refer :all]
             [clojure.pprint :as pp]
-            [lab.dgraph.core :refer [q qry create-client set-schema]])
+            [tool.dgraph.core :refer [q qry create-client set-schema]])
   ;
   )
 
