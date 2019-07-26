@@ -6,6 +6,8 @@
             [clojure.string :as cstr]
             [clojure.java.jdbc :as jdbc]
             [tool.core :refer [prn-members]]
+            [tool.io.core :refer [delete-files create-file
+                                  read-nth-line count-lines mk-dirs]]
             [clj-time.core :as ctime]
             [clj-time.format :as ctimef]
             [clj-time.jdbc]
@@ -97,19 +99,62 @@
   ;
   )
 
+(def filedir "/opt/app/.data/imdb/")
+
+(def filenames {:titles  "title.basics.tsv"
+                 :names   "name.basics.tsv"
+                 :crew    "title.crew.tsv"
+                 :ratings "title.ratings.tsv"})
+
+(def files (reduce-kv (fn [acc k v]
+                        (assoc acc k (str filedir v))) {} filenames))
+
+(defn names->rdf-3
+  [filename-in filename-out ctx specs & {:keys [limit]}]
+  (with-open [reader (io/reader filename-in)
+              writer (clojure.java.io/writer filename-out :append true)]
+    (let [data        (line-seq reader)
+          ; header-line (read-nth-line filename-in 1)
+          header-line (first data)
+          header      (split-tab header-line)
+          attrs       (rest header)
+          lines       (if limit (take limit (rest data)) (rest data))]
+      ; (prn header-line)
+      ; (prn header)
+      ; (prn attrs)
+      (doseq [; line (rest data)
+              line lines]
+        ; (prn (tsv-line->rdf-line (first line) attrs imdb-specs))
+        (as-> nil e
+          (tsv-line->rdf-line line attrs specs ctx)
+          (cstr/join \newline e)
+          ; (str e "\n")
+          (str e \newline)
+          ; (do (prn e) e)s
+          (.write writer e)
+          ;
+          )))))
+
+(defn files->rdfs
+  [filenames filename-out specs & {:keys [limits limit]}]
+  (let [ctx (create-ctx nil specs)]
+    (time
+     (do
+       (doseq [src filenames]
+         (names->rdf-3  src filename-out ctx specs :limit (or (get limits src) limit)))
+       (genres->rdf  filename-out  specs ctx)))))
 
 
 (comment
+  
+  
+  
+  ;
+  )
 
-  (def file-dir "/opt/app/.data/imdb/")
-
-  (def file-names {:titles  "title.basics.tsv"
-                   :names   "name.basics.tsv"
-                   :crew    "title.crew.tsv"
-                   :ratings "title.ratings.tsv"})
-
-  (def files (reduce-kv (fn [acc k v]
-                          (assoc acc k (str files-dir v))) {} file-names))
+(comment
+  
+  
 
   (jdbc/execute! db ["                     
                      CREATE SEQUENCE table_id_seq

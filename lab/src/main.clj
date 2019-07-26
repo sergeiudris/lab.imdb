@@ -7,7 +7,6 @@
             [lab.dgraph]
             [lab.imdb.schema]
             [lab.imdb.etl]
-            [lab.imdb.etl2]
             [lab.imdb.query]
             [lab.imdb.psql]
    ;
