@@ -292,5 +292,6 @@
         }
     },
     "calva.syncReplNamespaceToCurrentFile": true,
-    "calva.openBrowserWhenFigwheelStarted": false
+    "calva.openBrowserWhenFigwheelStarted": false,
+    "clojureWarrior.commentFormStyle": {"textDecoration": "none; opacity: 1"}    
 }
