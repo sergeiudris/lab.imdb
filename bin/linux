@@ -1,0 +1,12 @@
+#!/bin/bash
+
+
+add_group(){
+  sudo usermod -aG $1 $USER
+}
+
+list_groups(){
+  groups $USER
+}
+
+"$@"

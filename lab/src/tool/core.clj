@@ -42,7 +42,7 @@
 (comment
 
 
-  (parse-int "3")
+  (try-parse-int "3")
 
   ;
   )

@@ -6,3 +6,4 @@ movie query system
 
 * https://github.com/BetterThanTomorrow/calva
 * https://marketplace.visualstudio.com/items?itemName=tonsky.clojure-warrior
+* https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack
