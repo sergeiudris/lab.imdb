@@ -49,6 +49,11 @@
                  [clj-time "0.15.0"]
                 ;  [org.postgresql/postgresql "42.2.5.jre7"]
 
+                 [ch.qos.logback/logback-classic "1.1.2" :exclusions [org.slf4j/slf4j-api]]
+                 [org.slf4j/jul-to-slf4j "1.7.7"]
+                 [org.slf4j/jcl-over-slf4j "1.7.7"]
+                 [org.slf4j/log4j-over-slf4j "1.7.7"]
+
                  ;
                  ]
 
@@ -105,6 +110,6 @@
   :source-paths ["src"]
   :java-source-paths ["src"]  ; Java source is stored separately.
   :test-paths ["test"]
-  :resource-paths ["resources"]
+  :resource-paths ["resources" "config"]
 
   :auto-clean false)
