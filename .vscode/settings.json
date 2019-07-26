@@ -293,5 +293,7 @@
     },
     "calva.syncReplNamespaceToCurrentFile": true,
     "calva.openBrowserWhenFigwheelStarted": false,
-    "clojureWarrior.commentFormStyle": {"textDecoration": "none; opacity: 1"}    
+    "clojureWarrior.commentFormStyle": {"textDecoration": "none; opacity: 1"},
+    "explorer.openEditors.visible": 0
+
 }
