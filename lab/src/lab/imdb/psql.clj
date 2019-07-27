@@ -628,10 +628,10 @@
   (pqry db ["
               SELECT 
             a.primaryTitle,
-            a.averageRating,
-            a.numVotes,
-            a.tconst,
-            g.name
+            a.averageRating
+           -- a.numVotes
+           --  a.tconst,
+           -- g.name
             FROM (
                SELECT 
                t.primaryTitle,
@@ -647,11 +647,10 @@
             INNER JOIN title_genres  g on a.tconst = g.tconst
              WHERE g.name ILIKE 'documentary'
                ORDER BY a.averageRating DESC
-               LIMIT 20
+               LIMIT 50
                
                "])
-  
-  
+
   
   
   ;
