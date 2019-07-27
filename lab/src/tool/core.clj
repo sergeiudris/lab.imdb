@@ -45,6 +45,15 @@
   [s]
   (cstr/split s #"\t"))
 
+(defn filter-by-key
+  [coll key]
+  (filter #(-> % :key #{key}) coll))
+
+(defn drop-nth
+  "Remove nth element from coll"
+  [n coll]
+  (keep-indexed #(if (not= %1 n) %2) coll))
+
 (comment
 
 

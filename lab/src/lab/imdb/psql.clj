@@ -5,7 +5,7 @@
             [clojure.java.io :as io]
             [clojure.string :as cstr]
             [clojure.java.jdbc :as jdbc]
-            [tool.core :refer [prn-members nth-seq split-tab]]
+            [tool.core :refer [prn-members nth-seq split-tab drop-nth]]
             [tool.io.core :refer [delete-files create-file
                                   read-nth-line count-lines mk-dirs]]
             [clj-time.core :as ctime]
@@ -115,7 +115,16 @@
                 })
 
 (def filedir-out "/opt/.data/imdb.out/")
-(def filenames-out {:crew "title.crew.out.tsv"})
+(def filenames-out {:director-credits "director_credits.tsv"
+                    :writer-credits   "writer_credits.tsv"
+                    :titles           "titles.tsv"
+                    :names            "names.tsv"
+                    :akas             "akas.tsv"
+                    :episodes         "episodes.tsv"
+                    :known-for-titles "known_for_titles.tsv"
+                    :akas-types "akas_types.tsv"
+                    :title-genres "title_genres.tsv"
+                    })
 
 (def files (reduce-kv (fn [acc k v]
                         (assoc acc k (str filedir v))) {} filenames))
@@ -129,24 +138,40 @@
    filename-out
    ctx
    line->lines
-   & {:keys [limit offset]
-      :or   {offset 0}}]
-  (with-open [rdr (io/reader filename-in)
-              wtr (clojure.java.io/writer filename-out :append true)]
-    (let [data        (line-seq rdr)
-          header-line (first data)
-          header      (cstr/split header-line #"\t")
+   & {:keys [limit offset with-header]
+      :or   {offset 0 with-header true }}]
+  (->
+   (with-open [rdr (io/reader filename-in)
+               wtr (clojure.java.io/writer filename-out :append true)]
+     (let [data        (line-seq rdr)
+           header-line (first data)
+           header      (split-tab header-line)
           ; attrs       (rest header)
-          lines       (if limit (take limit (drop offset (rest data))) (rest data))]
-      (doseq [line lines]
-        (as-> line e
-          (do (prn e) e)
-          (line->lines e header ctx )
-          (cstr/join e \newline )
-          (str e \newline)
-          (.write wtr e)
+           lines       (if limit (take limit (drop offset (rest data))) (rest data))]
+       (if with-header (do (.write wtr (str header-line \newline))))
+       (doseq [line lines]
+         (as-> line e
+          ; (do (prn e) e)
+           (line->lines e header ctx)
+           (cstr/join \newline e)
+           (str e \newline)
+           (.write wtr e)
           ;
-          )))))
+           ))))
+   (time)
+   ))
+
+
+
+
+(comment
+  
+  (get-file-spec spec :names-out)
+  (source cstr/join)
+  
+  ;
+  )
+
 
 ; (defn files->rdfs
 ;   [filenames filename-out specs & {:keys [limits limit]}]
@@ -159,28 +184,115 @@
 
 (comment
   (mk-dirs filedir-out)
+
+  (process-file! (:crew files) (:director-credits files-out)  {}
+                 (fn [line header ctx]
+                   (let [vals      (split-tab line)
+                         title     (nth-seq vals 0)
+                         directors (cstr/split (nth-seq vals 1) #",")]
+                     (map (fn [x]
+                            (cstr/join  \tab [title x])) directors)))
+                ;  :offset 2000  :limit 10
+                 )
+
+  (split-tab (read-nth-line (:director-credits files-out) 2))
+
+  (process-file! (:crew files) (:writer-credits files-out)  {}
+                 (fn [line header ctx]
+                   (let [vals    (split-tab line)
+                         title   (nth-seq vals 0)
+                         writers (cstr/split (nth-seq vals 2) #",")]
+                     (map (fn [x]
+                            (cstr/join  \tab [title x])) writers)))
+                ;  :offset 2000  :limit 10
+                 )
+
+  (process-file! (:names files) (:known_for_titles files-out)  {}
+                 (fn [line header ctx]
+                   (let [vals   (split-tab line)
+                         nconst (first vals)
+                         titles (cstr/split (last vals) #",")]
+                     (map (fn [x]
+                            (cstr/join  \tab [nconst x])) titles)))
+                ;  :offset 0  :limit 10
+                 )
+
+  (process-file! (:names files) (:names files-out)  {}
+                 (fn [line header ctx]
+                   (let [vals   (split-tab line)]
+                     (list (cstr/join \tab (drop-last vals)))))
+                ;  :offset 0  :limit 10
+                 )
+
+
+  (process-file! (:titles files) (:titles files-out)  {}
+                 (fn [line header ctx]
+                   (let [vals   (split-tab line)]
+                     (list (cstr/join  \tab (drop-last vals)))))
+                ;  :offset 0  :limit 10
+                 )
+
+  (process-file! (:akas files) (:akas-types files-out)  {}
+                 (fn [line header ctx]
+                   (let [vals     (split-tab line)
+                         tconst   (first vals)
+                         ordering (second vals)
+                         types    (cstr/split (nth-seq vals 5) #",")]
+                     (map (fn [x]
+                            (cstr/join  \tab [tconst ordering x])) types)))
+                ;  :offset 0  :limit 10
+                 )
+
+  (process-file! (:akas files) (:akas-types files-out)  {}
+                 (fn [line header ctx]
+                   (let [vals     (split-tab line)
+                         tconst   (first vals)
+                         ordering (second vals)
+                         types    (cstr/split (nth-seq vals 5) #",")]
+                     (map (fn [x]
+                            (cstr/join  \tab [tconst ordering x])) types)))
+                ;  :offset 0  :limit 10
+                 )
   
-  (process-file! (:crew files) (:crew files-out)  {}
-                (fn [line header ctx]
-                  (let [vals      (cstr/split line #"\t")
-                        title     (nth-seq vals 0)
-                        directors (cstr/split (nth-seq vals 1) #",")
-                        writers   (cstr/split (nth-seq vals 2) #",")]
-                    (concat
-                     ()
-                     )
-                    
-                    )
-                  )
-                 :offset 2000  :limit 10)
+  (process-file! (:akas files) (:akas files-out)  {}
+                 (fn [line header ctx]
+                   (let [vals     (split-tab line)]
+                     (list (cstr/join  \tab (drop-nth 5 vals)))))
+                ;  :offset 0  :limit 10
+                 )
   
-  (source nth)
-  
+  (process-file! (:titles files) (:title-genres files-out)  {}
+                 (fn [line header ctx]
+                   (let [vals     (split-tab line)
+                         tconst   (first vals)
+                         genres    (cstr/split (last vals) #",")]
+                     (map (fn [x]
+                            (cstr/join  \tab [tconst x])) genres)))
+                ;  :offset 0  :limit 10
+                 )
+
+  (->
+   (source drop-last)
+   time)
+
+  (drop-last [1 2 3])
+
+  (seq 1)
+
   (count-lines (:akas files))
   (split-tab (read-nth-line (:akas files) 2500000))
-  
+
+  (split-tab (read-nth-line (:known_for_titles files-out) 2))
+
   (split-tab (read-nth-line (:episode files) 10000))
   
+  (split-tab (read-nth-line (:writer-credits files-out) 2))
+  
+  (split-tab (read-nth-line (:crew files) 3))
+  
+  (split-tab (read-nth-line (:title-genres files-out) 868))
+  
+
   ;
   )
 
@@ -190,12 +302,22 @@
     (jdbc/execute! db [(str "DROP TABLE IF EXISTS " name)])))
 
 (comment
+  
+  (delete-files
+  ;  (:names files-out)
+              ;  (:known_for_titles files-out)
+   (:writer-credits files-out)
+   (:director-credits files-out))
+  
+  (delete-files (:title-genres files-out) )
+  (delete-files "/opt/.data/imdb.out/title.crew.out.tsv" )
+  
   (drop-tables db ["titles" "names" "ratings"
                    "akas" "episodes" "director_credits"
                    "writer_credits" "known_for_titles"
                    "title_genres" "akas_types"])
 
-  (drop-tables db ["crew"])
+  (drop-tables db ["akas_types" ])
 
   ;
   )
@@ -247,7 +369,7 @@
                               region VARCHAR (50),
                               language VARCHAR (50),
                               -- types 
-                              -- attributes [string| number]
+                              attributes TEXT,
                               isOriginalTitle INT,
                               PRIMARY KEY (tconst, ordering)
                          );
@@ -265,41 +387,54 @@
 
   (jdbc/execute! db ["
     CREATE TABLE director_credits(
-                              nconst VARCHAR(50) NOT NULL, 
-                              tconst VARCHAR (50 ) NOT NULL,
-                              PRIMARY KEY (nconst, tconst)
+                              id    SERIAL PRIMARY KEY,
+                              tconst VARCHAR (50) NOT NULL,
+                              nconst VARCHAR (50)
                          );
                          "])
 
   (jdbc/execute! db ["
     CREATE TABLE writer_credits(
-                              nconst VARCHAR(50) NOT NULL, 
-                              tconst VARCHAR (50 ) NOT NULL,
-                              PRIMARY KEY (nconst, tconst)
+                              id    SERIAL PRIMARY KEY,
+                             tconst VARCHAR (50) NOT NULL,
+                              nconst VARCHAR (50)
                          );
                          "])
 
   (jdbc/execute! db ["
     CREATE TABLE known_for_titles(
+                              id    SERIAL PRIMARY KEY,
                               nconst VARCHAR(50) NOT NULL, 
-                              tconst VARCHAR (50 ) NOT NULL,
-                              PRIMARY KEY (nconst, tconst)
+                              tconst VARCHAR (50 )
                          );
                          "])
 
   (jdbc/execute! db ["
     CREATE TABLE title_genres(
-                              name TEXT, 
+                              id    SERIAL PRIMARY KEY,
                               tconst VARCHAR (50),
-                              PRIMARY KEY (name, tconst)
+                              name TEXT
                          );
                          "])
 
   (jdbc/execute! db ["
     CREATE TABLE akas_types(
-                              name TEXT, 
+                              id    SERIAL PRIMARY KEY,
                               tconst VARCHAR (50),
-                              PRIMARY KEY (name, tconst)
+                              ordering INT,
+                              name TEXT
+                         );
+                         "])
+  
+  (jdbc/execute! db ["
+    CREATE TABLE principals(
+                              tconst VARCHAR (50)  NOT NULL,
+                              ordering INT,
+                              nconst VARCHAR (50) NOT NULL,
+                              category TEXT,
+                              job TEXT,
+                              characters TEXT,
+                              PRIMARY KEY (tconst, ordering)
                          );
                          "])
 
@@ -307,6 +442,64 @@
   ;
   )
   
+(defn import-tsv
+  [db filename table & {:keys [cols] }]
+  (jdbc/execute! db [(str "
+                     COPY " table (if cols (str "(" (cstr/join \, cols) ")") "") " FROM "
+                          "'" filename "'"
+                          " DELIMITER E'\t' 
+          NULL '\\N'  QUOTE E'\b' ESCAPE E'\b' CSV HEADER 
+                     ")]))
+
+(comment
+
+  (import-tsv db (:ratings files) "ratings" :cols ["tconst" "averageRating" "numVotes"])
+  ; 954349
+
+  (import-tsv db (:principals files) "principals")
+  ; 34717825
+
+  (import-tsv db (:episode files) "episodes")
+  ; 4190728
+
+
+
+  (import-tsv db (:titles files-out) "titles")
+  ; 6018810
+
+  (jdbc/query db ["select count(*) from titles"])
+
+
+  (import-tsv db (:names files-out) "names")
+  ; 9459599
+
+
+  (import-tsv db (:writer-credits files-out) "writer_credits" :cols ["tconst" "nconst"])
+  ; 10068413
+
+  (import-tsv db (:director-credits files-out) "director_credits" :cols ["tconst" "nconst"])
+  ; 7106571
+
+  (import-tsv db (:known-for-titles files-out) "known_for_titles" :cols ["nconst" "tconst"])
+  ; 16604682
+
+
+  (import-tsv db (:title-genres files-out) "title_genres" :cols ["tconst" "name"])
+  ; 9612240
+
+
+  (import-tsv db (:akas files-out) "akas")
+  ; 3808940
+
+
+  (import-tsv db (:akas-types files-out) "akas_types" :cols ["tconst" "ordering" "name"])
+  ; 3808940
+
+
+
+  ;
+  )
+
 
 (comment
 
@@ -343,6 +536,124 @@
   ; 954349
   
 
+  ;
+  )
+
+
+(defn pqry
+  [db query-vec]
+  (time (->
+         (jdbc/query db query-vec)
+         (pp/pprint))))
+
+(comment
+  
+  (->
+   (jdbc/query db ["
+               SELECT 
+               t.primaryTitle,
+               r.averageRating
+               FROM titles t
+               INNER JOIN ratings r on t.tconst = r.tconst  
+               LIMIT 10
+               
+               "])
+   (pp/pprint)
+   )
+  
+  (->
+   (jdbc/query db ["
+               SELECT 
+               t.primaryTitle,
+               r.averageRating
+               FROM titles t
+               LEFT JOIN ratings r on t.tconst = r.tconst  
+               LIMIT 10
+               
+               "])
+   (pp/pprint))
+  
+  (->
+   (jdbc/query db ["
+               SELECT 
+               t.primaryTitle,
+               r.averageRating
+               FROM titles t
+               RIGHT JOIN ratings r on t.tconst = r.tconst  
+               LIMIT 10
+               
+               "])
+   (pp/pprint))
+  
+  (->
+   (jdbc/query db ["
+               SELECT 
+               t.primaryTitle,
+               r.averageRating
+               FROM titles t
+               FULL JOIN ratings r on t.tconst = r.tconst  
+               LIMIT 10
+               
+               "])
+   (pp/pprint))
+  
+  (pqry db ["
+               SELECT 
+               t.primaryTitle,
+               r.averageRating,
+               r.numVotes
+               FROM titles t
+               INNER JOIN ratings r on t.tconst = r.tconst 
+               WHERE r.averageRating > 8 
+               ORDER BY r.averageRating DESC
+               LIMIT 10
+               
+               "])
+  
+  (pqry db ["
+               SELECT 
+               t.primaryTitle,
+               r.averageRating,
+               r.numVotes
+               FROM titles t
+               INNER JOIN ratings r on t.tconst = r.tconst 
+               WHERE r.averageRating > 8 
+                     AND r.numVotes > 10000
+               ORDER BY r.averageRating DESC
+               LIMIT 10
+               
+               "])
+  
+  
+  (pqry db ["
+              SELECT 
+            a.primaryTitle,
+            a.averageRating,
+            a.numVotes,
+            a.tconst,
+            g.name
+            FROM (
+               SELECT 
+               t.primaryTitle,
+               r.averageRating,
+               r.numVotes,
+               t.tconst
+               FROM titles t
+               INNER JOIN ratings r on t.tconst = r.tconst 
+               WHERE r.averageRating > 7
+                     AND t.startYear > 2010
+                     AND r.numVotes > 5000
+            ) as a
+            INNER JOIN title_genres  g on a.tconst = g.tconst
+             WHERE g.name ILIKE 'documentary'
+               ORDER BY a.averageRating DESC
+               LIMIT 20
+               
+               "])
+  
+  
+  
+  
   ;
   )
   

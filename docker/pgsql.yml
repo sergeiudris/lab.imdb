@@ -14,7 +14,7 @@ services:
         target: /var/lib/postgresql
         volume:
           nocopy: true
-      - ../:/opt/app
+      - ../:/opt
     stdin_open: true
     tty: true
 
