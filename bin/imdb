@@ -58,8 +58,8 @@ load(){
 
     # dc exec server bash -c "cd /opt/app; dgraph live -r .data/imdb.rdf/name.basics.rdf --zero zero:5080 -c 1"
     
-    bash bin/dgraph dc exec server bash -c "cd /opt/app; dgraph live -b 1000 -c 10 \
-     -r .data/imdb.rdf/sample.rdf \
+    bash bin/dgraph dc exec server bash -c "cd /opt/app; dgraph live -b 2000 -c 20 \
+     -r .data/imdb.rdf/all.rdf \
      --zero zero:5080 -c 1"
 
     # dc exec server bash -c "cd /opt/app; dgraph live -b 1000 -c 10 \
@@ -68,7 +68,7 @@ load(){
 }
 
 load_test(){
-      bash bin/dgraph dc exec server bash -c "cd /opt/app; dgraph live -b 1000 -c 10 \
+      bash bin/dgraph dc exec server bash -c "cd /opt/app; dgraph live -b 2000 -c 20 \
      -r ./bin/test.rdf \
      --zero zero:5080 -c 1"
 }
