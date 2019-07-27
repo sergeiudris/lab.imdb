@@ -4,6 +4,7 @@
             [clojure.pprint :as pp]
             [clojure.java.javadoc :refer [javadoc]]
             [puget.printer :as pug]
+            [clojure.string :as cstr]
             ;
             ))
 
@@ -38,6 +39,11 @@
   [s & {:keys [ch]
         :or   {ch "'"}}]
   (clojure.string/replace s #"\"" ch))
+
+(defn split-tab
+  "Splits the string by tab char"
+  [s]
+  (cstr/split s #"\t"))
 
 (comment
 
@@ -124,3 +130,8 @@
   "returns random int in range a b"
   [a b]
   (int (- b (* (rand) (- b a)))))
+
+(defn nth-seq
+  "Returns the nth element in a seq"
+  [coll index]
+  (first (drop index coll)))

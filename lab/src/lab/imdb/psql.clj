@@ -5,7 +5,7 @@
             [clojure.java.io :as io]
             [clojure.string :as cstr]
             [clojure.java.jdbc :as jdbc]
-            [tool.core :refer [prn-members]]
+            [tool.core :refer [prn-members nth-seq split-tab]]
             [tool.io.core :refer [delete-files create-file
                                   read-nth-line count-lines mk-dirs]]
             [clj-time.core :as ctime]
@@ -41,6 +41,10 @@
 
   (jdbc/query db ["select * from account"])
 
+  
+  (jdbc/execute! db ["DROP TABLE account"])
+  
+  
   (.getTime (java.util.Date.))
   (prn-members (java.util.Date.))
   (str (java.util.Date.))
@@ -99,69 +103,110 @@
   ;
   )
 
-(def filedir "/opt/app/.data/imdb/")
+(def filedir "/opt/.data/imdb/")
 
 (def filenames {:titles  "title.basics.tsv"
                  :names   "name.basics.tsv"
                  :crew    "title.crew.tsv"
-                 :ratings "title.ratings.tsv"})
+                 :ratings "title.ratings.tsv"
+                 :akas "title.akas.tsv"
+                 :principals "title.principals.tsv"
+                 :episode "title.episode.tsv"
+                })
+
+(def filedir-out "/opt/.data/imdb.out/")
+(def filenames-out {:crew "title.crew.out.tsv"})
 
 (def files (reduce-kv (fn [acc k v]
                         (assoc acc k (str filedir v))) {} filenames))
+(def files-out (reduce-kv (fn [acc k v]
+                        (assoc acc k (str filedir-out v))) {} filenames-out))
 
-(defn names->rdf-3
-  [filename-in filename-out ctx specs & {:keys [limit]}]
-  (with-open [reader (io/reader filename-in)
-              writer (clojure.java.io/writer filename-out :append true)]
-    (let [data        (line-seq reader)
-          ; header-line (read-nth-line filename-in 1)
+(defn process-file!
+  "Processes an in-file line by line in a lazy manner
+   and writes to out-file"
+  [filename-in
+   filename-out
+   ctx
+   line->lines
+   & {:keys [limit offset]
+      :or   {offset 0}}]
+  (with-open [rdr (io/reader filename-in)
+              wtr (clojure.java.io/writer filename-out :append true)]
+    (let [data        (line-seq rdr)
           header-line (first data)
-          header      (split-tab header-line)
-          attrs       (rest header)
-          lines       (if limit (take limit (rest data)) (rest data))]
-      ; (prn header-line)
-      ; (prn header)
-      ; (prn attrs)
-      (doseq [; line (rest data)
-              line lines]
-        ; (prn (tsv-line->rdf-line (first line) attrs imdb-specs))
-        (as-> nil e
-          (tsv-line->rdf-line line attrs specs ctx)
-          (cstr/join \newline e)
-          ; (str e "\n")
+          header      (cstr/split header-line #"\t")
+          ; attrs       (rest header)
+          lines       (if limit (take limit (drop offset (rest data))) (rest data))]
+      (doseq [line lines]
+        (as-> line e
+          (do (prn e) e)
+          (line->lines e header ctx )
+          (cstr/join e \newline )
           (str e \newline)
-          ; (do (prn e) e)s
-          (.write writer e)
+          (.write wtr e)
           ;
           )))))
 
-(defn files->rdfs
-  [filenames filename-out specs & {:keys [limits limit]}]
-  (let [ctx (create-ctx nil specs)]
-    (time
-     (do
-       (doseq [src filenames]
-         (names->rdf-3  src filename-out ctx specs :limit (or (get limits src) limit)))
-       (genres->rdf  filename-out  specs ctx)))))
-
+; (defn files->rdfs
+;   [filenames filename-out specs & {:keys [limits limit]}]
+;   (let [ctx (create-ctx nil specs)]
+;     (time
+;      (do
+;        (doseq [src filenames]
+;          (names->rdf-3  src filename-out ctx specs :limit (or (get limits src) limit)))
+;        (genres->rdf  filename-out  specs ctx)))))
 
 (comment
+  (mk-dirs filedir-out)
   
+  (process-file! (:crew files) (:crew files-out)  {}
+                (fn [line header ctx]
+                  (let [vals      (cstr/split line #"\t")
+                        title     (nth-seq vals 0)
+                        directors (cstr/split (nth-seq vals 1) #",")
+                        writers   (cstr/split (nth-seq vals 2) #",")]
+                    (concat
+                     ()
+                     )
+                    
+                    )
+                  )
+                 :offset 2000  :limit 10)
   
+  (source nth)
+  
+  (count-lines (:akas files))
+  (split-tab (read-nth-line (:akas files) 2500000))
+  
+  (split-tab (read-nth-line (:episode files) 10000))
   
   ;
   )
 
+(defn drop-tables
+  [db tables]
+  (doseq [name tables]
+    (jdbc/execute! db [(str "DROP TABLE IF EXISTS " name)])))
+
 (comment
-  
-  
+  (drop-tables db ["titles" "names" "ratings"
+                   "akas" "episodes" "director_credits"
+                   "writer_credits" "known_for_titles"
+                   "title_genres" "akas_types"])
+
+  (drop-tables db ["crew"])
+
+  ;
+  )
+
+(comment
 
   (jdbc/execute! db ["                     
                      CREATE SEQUENCE table_id_seq
                      "])
 
   (jdbc/execute! db ["
-                         
     CREATE TABLE titles(
                               tconst VARCHAR(50) PRIMARY KEY NOT NULL, 
                               titleType VARCHAR(50),
@@ -170,36 +215,22 @@
                               isAdult INT,
                               startYear INT,
                               endYear INT,
-                              runtimeMinutes INT,
-                              genres VARCHAR (512)
+                              runtimeMinutes INT
+                              -- genres [string]
                          );
                          "])
   (jdbc/execute! db ["
-                         
     CREATE TABLE names(
                               nconst VARCHAR(50) PRIMARY KEY NOT NULL, 
                               primaryName  VARCHAR (512),
                               birthYear INT,
                               deathYear INT,
-                              primaryProfession VARCHAR (512),
-                              knownForTitles VARCHAR (256)
-                         );
-                         "])
-
-
-
-  (jdbc/execute! db ["
-                         
-    CREATE TABLE crew(
-                              id SERIAL PRIMARY KEY,
-                              tconst VARCHAR (50) NOT NULL,
-                              directors TEXT,
-                              writers TEXT
+                              primaryProfession VARCHAR (512)
+                              -- knownForTitles VARCHAR (256)
                          );
                          "])
 
   (jdbc/execute! db ["
-                         
     CREATE TABLE ratings(
                               id    SERIAL PRIMARY KEY,
                               tconst VARCHAR (50) NOT NULL,
@@ -208,6 +239,76 @@
                          );
                          "])
 
+  (jdbc/execute! db ["
+    CREATE TABLE akas(
+                              tconst  VARCHAR (50),
+                              ordering  INT,
+                              title TEXT ,
+                              region VARCHAR (50),
+                              language VARCHAR (50),
+                              -- types 
+                              -- attributes [string| number]
+                              isOriginalTitle INT,
+                              PRIMARY KEY (tconst, ordering)
+                         );
+                         "])
+
+  (jdbc/execute! db ["
+    CREATE TABLE episodes(
+                              tconst  VARCHAR (50) PRIMARY KEY NOT NULL,
+                              parentTconst VARCHAR (50),
+                              seasonNumber INT,
+                              episodeNumber INT
+                         );
+                         "])
+
+
+  (jdbc/execute! db ["
+    CREATE TABLE director_credits(
+                              nconst VARCHAR(50) NOT NULL, 
+                              tconst VARCHAR (50 ) NOT NULL,
+                              PRIMARY KEY (nconst, tconst)
+                         );
+                         "])
+
+  (jdbc/execute! db ["
+    CREATE TABLE writer_credits(
+                              nconst VARCHAR(50) NOT NULL, 
+                              tconst VARCHAR (50 ) NOT NULL,
+                              PRIMARY KEY (nconst, tconst)
+                         );
+                         "])
+
+  (jdbc/execute! db ["
+    CREATE TABLE known_for_titles(
+                              nconst VARCHAR(50) NOT NULL, 
+                              tconst VARCHAR (50 ) NOT NULL,
+                              PRIMARY KEY (nconst, tconst)
+                         );
+                         "])
+
+  (jdbc/execute! db ["
+    CREATE TABLE title_genres(
+                              name TEXT, 
+                              tconst VARCHAR (50),
+                              PRIMARY KEY (name, tconst)
+                         );
+                         "])
+
+  (jdbc/execute! db ["
+    CREATE TABLE akas_types(
+                              name TEXT, 
+                              tconst VARCHAR (50),
+                              PRIMARY KEY (name, tconst)
+                         );
+                         "])
+
+
+  ;
+  )
+  
+
+(comment
 
   (jdbc/execute! db [(str "
                      COPY titles FROM "
@@ -240,41 +341,8 @@
           NULL '\\N'  QUOTE E'\b' ESCAPE E'\b' CSV HEADER 
                      ")])
   ; 954349
-
-
-
-  (jdbc/execute! db ["
-                         
-    CREATE TABLE name_titles(
-                              id SERIAL PRIMARY KEY,
-                              nconst VARCHAR(50) NOT NULL, 
-                              tconst VARCHAR (50 ) NOT NULL
-                         );
-                         "])
-
-
-  (jdbc/execute! db ["
-                         
-    CREATE TABLE title_directors(
-                              id SERIAL PRIMARY KEY,
-                              nconst VARCHAR(50) NOT NULL, 
-                              tconst VARCHAR (50 ) NOT NULL
-                         );
-                         "])
-
-  (jdbc/execute! db ["
-                         
-    CREATE TABLE title_writers(
-                              id SERIAL PRIMARY KEY,
-                              nconst VARCHAR(50) NOT NULL, 
-                              tconst VARCHAR (50 ) NOT NULL
-                         );
-                         "])
-
-
-;
-  )
   
 
-
+  ;
+  )
   
