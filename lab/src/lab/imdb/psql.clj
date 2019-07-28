@@ -444,12 +444,14 @@
   
 (defn import-tsv
   [db filename table & {:keys [cols] }]
-  (jdbc/execute! db [(str "
+  (->
+   (jdbc/execute! db [(str "
                      COPY " table (if cols (str "(" (cstr/join \, cols) ")") "") " FROM "
-                          "'" filename "'"
-                          " DELIMITER E'\t' 
+                           "'" filename "'"
+                           " DELIMITER E'\t' 
           NULL '\\N'  QUOTE E'\b' ESCAPE E'\b' CSV HEADER 
-                     ")]))
+                     ")])
+   (time)))
 
 (comment
 
@@ -462,17 +464,12 @@
   (import-tsv db (:episode files) "episodes")
   ; 4190728
 
-
-
   (import-tsv db (:titles files-out) "titles")
   ; 6018810
-
   (jdbc/query db ["select count(*) from titles"])
-
 
   (import-tsv db (:names files-out) "names")
   ; 9459599
-
 
   (import-tsv db (:writer-credits files-out) "writer_credits" :cols ["tconst" "nconst"])
   ; 10068413

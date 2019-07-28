@@ -11,7 +11,7 @@ services:
     volumes:
       - type: volume
         source: moviequery.imdb.postgres
-        target: /var/lib/postgresql
+        target: /var/lib/postgresql/data
         volume:
           nocopy: true
       - ../:/opt
