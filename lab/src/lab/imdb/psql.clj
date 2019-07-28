@@ -647,6 +647,28 @@
                LIMIT 50
                
                "])
+  
+  (pqry db ["
+              SELECT count(distinct tconst) from titles;
+               
+               "])
+  ; 954349
+  
+  (pqry db ["
+              SELECT count(distinct tconst) from ratings 
+            WHERE averageRating IS NOT NULL;
+               
+               "])
+  ;954349
+  
+  (pqry db ["
+              SELECT count(distinct tconst) from titles
+           WHERE tconst in (SELECT distinct tconst FROM ratings) 
+               
+               "])
+  ; 954348
+  
+  
 
   
   

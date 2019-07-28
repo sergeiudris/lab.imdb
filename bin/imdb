@@ -17,7 +17,7 @@ load(){
   # wget -r -np -N -P ./.data $HOST
 }
 
-unzip(){
+ungz(){
   PREFIX=./.data/imdb.gz
   TARGET=./.data/imdb
   # find $PREFIX -type f -name "*.gz" -print0 | xargs -0 -I{} tar xf {} -C $PREFIX
@@ -27,7 +27,7 @@ unzip(){
   mv $PREFIX/*.tsv $TARGET
 }
 
-zip(){
+gz(){
   PREFIX=./.data/imdb.rdf
   TARGET=./.data/imdb.rdf.gz
   gzip -k -r  $PREFIX
@@ -83,6 +83,12 @@ bulk(){
      --num_go_routines=6 \
      --http 0.0.0.0:8000 \
      --zero zero:5080"
+}
+
+load_ml(){
+  PREFIX=./.data/lens
+  wget -P $PREFIX http://files.grouplens.org/datasets/movielens/ml-latest.zip
+  unzip  $PREFIX/ml-latest.zip -d $PREFIX
 }
 
 "$@"
