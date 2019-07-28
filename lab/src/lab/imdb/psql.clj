@@ -21,7 +21,7 @@
   {:dbtype   "postgresql"
    :dbname   "postgresdb"
    :user     "postgres"
-   :host     "postgres"
+   :host     "postgres-imdb"
    :port     5432
    :password "postgres"})
 
