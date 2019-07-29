@@ -35,6 +35,8 @@
   (read-nth-line (:movies files) 1)
   (read-nth-line (:tags files) 1)
   (read-nth-line (:links files) 1)
+  (read-nth-line (:ratings files) 1)
+  
   
   
   
