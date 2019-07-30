@@ -16,7 +16,7 @@
   {:dbtype   "postgresql"
    :dbname   "postgresdb"
    :user     "postgres"
-   :host     "postgres-imdb"
+   :host     "postgres-stack"
    :port     5432
    :password "postgres"})
 
@@ -26,9 +26,32 @@
          (jdbc/query db query-vec)
          (pp/pprint))))
 
+(def filedir "/opt/.data/stack/")
+
+
+
 (comment
   
   (pqry db ["select * from x"])
+  
+  (read-nth-line (str filedir "Badges.xml" ) 1000 )
+  
+  (read-nth-line (str filedir "Comments.xml") 1000)
+  
+  (read-nth-line (str filedir "PostHistory.xml") 1000)
+  (read-nth-line (str filedir "PostLinks.xml") 1000)
+  
+  (read-nth-line (str filedir "Posts.xml") 10)
+  
+  (read-nth-line (str filedir "Tags.xml") 10)
+  
+  (read-nth-line (str filedir "Users.xml") 10)
+  
+  (read-nth-line (str filedir "Votes.xml") 10)
+  
+  
+  
+  
   
   ;
   )
