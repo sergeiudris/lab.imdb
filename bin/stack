@@ -1,0 +1,14 @@
+#!/bin/bash
+
+install(){
+  sudo apt-get install -y p7zip-full
+}
+
+load(){
+  PREFIX=./.data/stack
+  # BASE=https://archive.org/download/stackexchange
+  # wget -P $PREFIX  $BASE/softwareengineering.stackexchange.com.7z
+  7z x -o$PREFIX $PREFIX/softwareengineering.stackexchange.com.7z
+}
+
+"$@"
