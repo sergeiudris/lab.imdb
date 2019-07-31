@@ -4,7 +4,9 @@
             [clojure.java.io :as io]
             [clojure.string :as cstr]
             [clojure.java.jdbc :as jdbc]
-            [tool.core :refer [prn-members nth-seq split-tab drop-nth]]
+            [clojure.xml :as xml]
+            [clojure.zip :as zip]
+            [tool.core :refer [prn-members nth-seq split-tab drop-nth zip-str]]
             [tool.io.core :refer [delete-files create-file
                                   read-nth-line count-lines mk-dirs]]
             [clj-time.core :as ctime]
@@ -30,28 +32,53 @@
 
 
 
+
 (comment
-  
+
   (pqry db ["select * from x"])
-  
-  (read-nth-line (str filedir "Badges.xml" ) 1000 )
-  
+
+  (read-nth-line (str filedir "Badges.xml") 1000)
+
   (read-nth-line (str filedir "Comments.xml") 1000)
-  
+
   (read-nth-line (str filedir "PostHistory.xml") 1000)
   (read-nth-line (str filedir "PostLinks.xml") 1000)
-  
+
   (read-nth-line (str filedir "Posts.xml") 10)
-  
+
   (read-nth-line (str filedir "Tags.xml") 10)
-  
+
   (read-nth-line (str filedir "Users.xml") 10)
-  
+
   (read-nth-line (str filedir "Votes.xml") 10)
+
+
+
+  (dir xml)
+  (source xml/parse)
+
+  (xml/parse (read-nth-line (str filedir "Votes.xml") 10))
+
+  (zip-str  (read-nth-line (str filedir "Votes.xml") 10))
+
+  (zip-str  (->>
+             (map #(read-nth-line (str filedir "Votes.xml") %) (range 5 10))
+             (cstr/join \newline)
+             ))
   
+  (keys (xml/parse (str filedir "PostLinks.xml")))
   
+  (->
+   (xml/parse (str filedir "PostLinks.xml"))
+   :content
+   count)
   
-  
-  
+  (->
+   (xml/parse (str filedir "PostLinks.xml"))
+   :content
+   (nth 3)
+   )
+
+
   ;
   )

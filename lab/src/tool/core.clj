@@ -5,6 +5,8 @@
             [clojure.java.javadoc :refer [javadoc]]
             [puget.printer :as pug]
             [clojure.string :as cstr]
+            [clojure.xml :as xml]
+            [clojure.zip :as zip]
             ;
             ))
 
@@ -144,3 +146,8 @@
   "Returns the nth element in a seq"
   [coll index]
   (first (drop index coll)))
+
+;;convenience function, first seen at nakkaya.com later in clj.zip src
+(defn zip-str [s]
+  (zip/xml-zip
+   (xml/parse (java.io.ByteArrayInputStream. (.getBytes s)))))
