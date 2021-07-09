@@ -1,3 +1,1 @@
 # sample-imdb
-
-[archived]
