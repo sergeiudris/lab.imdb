@@ -44,3 +44,4 @@ build/
 kafka-docker
 
 .data/*
+log
